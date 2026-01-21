@@ -77,7 +77,7 @@ export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
               </div>
               <h3 className="text-2xl font-bold mb-2">Administration</h3>
               <p className="text-text-secondary mb-4">
-                Manage referrals and coordinate care
+                Manage referrals and coordinate care EDIT
               </p>
               <Button className="w-full bg-warning hover:opacity-90 text-white mt-4">
                 Login as Administration
