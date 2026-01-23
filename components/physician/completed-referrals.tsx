@@ -21,7 +21,8 @@ export default function CompletedReferralsPage({
   const completedReferrals = useMemo(() => {
     return Array.from(db.referrals.values()).filter(
       (ref: any) =>
-        ref.physicianId === physician.id && ref.status === "Completed",
+        ref.physicianId === physician.id &&
+        (ref.status === "Completed" || ref.status === "confirmed" || ref.status === "paid" || ref.status === "completed"),
     );
   }, [physician.id]);
 
@@ -88,7 +89,7 @@ export default function CompletedReferralsPage({
                   </div>
                   <div className="text-right ml-4">
                     <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      Completed
+                      {referral.status === 'paid' ? 'Paid' : 'Completed'}
                     </span>
                   </div>
                 </div>

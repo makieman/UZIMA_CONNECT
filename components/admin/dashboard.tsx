@@ -5,7 +5,6 @@ import NotificationBell from "../notifications/notification-bell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PendingPhysicianReferrals from "./pending-physician-referrals";
-import CompletedReferralsPage from "./completed-referrals";
 import CalendarView from "./calendar-view";
 
 interface AdminDashboardProps {
@@ -29,7 +28,10 @@ export default function AdminDashboard({
       <header className="bg-warning text-white py-6 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Uzimacare - Administration Portal</h1>
+            <h1 className="text-3xl font-bold text-center">
+              <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+              <div className="text-sm mt-2">Administration Portal</div>
+            </h1>
             <p className="text-amber-100">Referral & Booking Management</p>
           </div>
           <div className="flex items-center gap-4">
@@ -66,14 +68,6 @@ export default function AdminDashboard({
             }
           >
             Pending Referrals
-          </Button>
-          <Button
-            onClick={() => setCurrentView("completed")}
-            className={
-              currentView === "completed" ? "bg-warning text-white" : "btn-secondary"
-            }
-          >
-            Confirmed Referrals
           </Button>
           <Button
             onClick={() => setCurrentView("calendar")}
@@ -127,7 +121,7 @@ export default function AdminDashboard({
 
         {currentView === "pending-referrals" && <PendingPhysicianReferrals />}
         {currentView === "calendar" && <CalendarView />}
-        {currentView === "completed" && <CompletedReferralsPage />}
+        
       </main>
     </div>
   );

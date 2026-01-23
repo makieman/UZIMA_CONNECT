@@ -14,8 +14,10 @@ export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-2">Uzimacare</h1>
-          <p className="text-lg text-purple-100">A KENYAN HEALTHCARE  REFERRAL SYSTEM</p>
+          <h1 className="text-5xl font-bold mb-2 text-center">
+            <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+          </h1>
+          <p className="text-lg text-purple-100">A HEALTHCARE REFERRAL SYSTEM</p>
         </div>
 
         {/* Role Cards */}
@@ -77,7 +79,7 @@ export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
               </div>
               <h3 className="text-2xl font-bold mb-2">Administration</h3>
               <p className="text-text-secondary mb-4">
-                Manage referrals and coordinate care EDIT
+                Manage referrals and coordinate care
               </p>
               <Button className="w-full bg-warning hover:opacity-90 text-white mt-4">
                 Login as Administration

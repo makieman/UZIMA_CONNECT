@@ -68,7 +68,7 @@ function initializeDemoData() {
   const physician1 = {
     id: "physician-001",
     role: "physician",
-    licenseId: "PH-12345",
+    licenseId: "56845",
     fullName: "Dr. James Kipchoge",
     email: "dr.kipchoge@hospital.ke",
     hospital: "Nairobi Central Hospital",

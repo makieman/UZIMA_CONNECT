@@ -14,7 +14,7 @@ interface PhysicianLoginProps {
 export default function PhysicianLogin({
   onLoginSuccess,
 }: PhysicianLoginProps) {
-  const [email, setEmail] = useState("dr.kipchoge@hospital.ke");
+  const [email, setEmail] = useState("56845");
   const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,20 +42,22 @@ export default function PhysicianLogin({
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Uzimacare</h1>
+          <h1 className="text-3xl font-bold mb-2 text-center">
+            <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px black', textStroke: '1px black' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px black', textStroke: '1px black' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+          </h1>
           <p className="text-text-secondary">Physician Portal</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              License ID or Email
+              license id
             </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="dr.kipchoge@hospital.ke"
+              placeholder="56845"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -89,7 +91,7 @@ export default function PhysicianLogin({
         </form>
 
         <p className="text-center text-sm text-text-secondary mt-6">
-          Demo email: dr.kipchoge@hospital.ke | Password: password
+          Demo license id: 56845 | Password: password
         </p>
       </Card>
     </div>

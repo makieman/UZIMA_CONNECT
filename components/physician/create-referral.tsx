@@ -23,7 +23,7 @@ export default function CreateReferralPage({
     patientId: "",
     medicalHistory: "",
     labResults: "",
-    diagnosis: "",
+    diagnosis: [] as string[],
     referringHospital: physician.hospital,
     receivingFacility: "",
     priority: "Routine" as "Routine" | "Urgent" | "Emergency",
@@ -73,11 +73,102 @@ export default function CreateReferralPage({
   const [loading, setLoading] = useState(false);
 
   const mockHospitals = [
-    "Nairobi Central Hospital",
+    "Machakos Referral Hospital",
+    "Kenyatta National Hospital (KNH)",
+    "Mbagathi Hospital",
+    "Memorial Hospital Armed Forces",
     "Mombasa County Hospital",
     "Kisumu District Hospital",
     "Nakuru Teaching Hospital",
   ];
+
+  const diseases = [
+    "malignant hypertension",
+    "diabetic retinopathy",
+    "diabetic nephropathy",
+    "twin pregnancy",
+    "gestational hypertension",
+    "heart failure",
+    "pulmonary hypertension",
+    "syncope of unknown reason",
+    "stroke",
+    "parkinsons",
+    "cerebral palsy",
+    "peripheral neuropathy",
+    "myasthenia gravis",
+    // additional conditions requested
+    "epilepsy",
+    "multiple sclerosis",
+    "poorly controlled diabetes",
+    "pediatric diabetes",
+    "goitre",
+    "hyperthyroidism",
+    "hypothyroidism",
+    "cushings syndrome",
+    "other endocrinology condition",
+    "other neurologic condition",
+    "fractures",
+    "chronic obstructive pulmonary disease",
+    "drug resistant tuberculosis (TB)",
+    "severe asthma",
+    "malignancy (cancer)",
+    "possible liver cirrhosis",
+    "gastroesophageal reflux disease",
+    "peptic ulcer disease",
+    "possible gastric cancer",
+    "human immunodeficiency virus (AIDS)(HIV)",
+    "chronic diarrhoea",
+    "upper gastrointestinal bleeding (UGIB)",
+    "lower gastrointestinal disease (LGIB)",
+    "chronic kidney disease (dialysis)",
+    "acute kidney failure",
+    "Gum scrubbing",
+    "nephrotic syndrome",
+    "neurofibromatosis",
+    "rheumatoid arthritis",
+    "systemic lupus erythematosus",
+    "gout refractory",
+    "unexplained anemia",
+    "leukemia",
+    "lymphoma",
+    "unexplained thrombophilia",
+    "unexplained neutropenia",
+    "multiple myeloma",
+    "psychiatric illness",
+    "major depressive disorder",
+    "bipolar disorder",
+    "substance use disorder",
+    "endometriosis",
+    "infertility",
+    "erectile deficiency",
+    "possible prostate cancer",
+    "urinary incontinence",
+    "chronic urinary retention",
+    "kidney stones",
+    "pyelonephritis",
+    "severe dermatology condition",
+    "chronic skin ulcers",
+    "chronic pain",
+    "chronic back pain",
+    "chronic abdominal pain",
+    "fibroids",
+    // newly requested conditions
+    "meningitis",
+    "hydrocephalus",
+    "head trauma",
+    "unexplained bone pain",
+    "encephalitis",
+    "measles",
+    "scarlet fever",
+    "pemphigus",
+    "complicated malaria",
+    "chronic cough",
+    "chronic conjunctivitis",
+    "keratoconjunctivitis",
+    "hepatitis",
+  ];
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -88,9 +179,41 @@ export default function CreateReferralPage({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const toggleDiagnosis = (d: string) => {
+    const dU = d.toUpperCase();
+    const cur = Array.isArray(formData.diagnosis) ? [...formData.diagnosis] : [];
+    if (cur.includes(dU)) {
+      setFormData((prev) => ({
+        ...prev,
+        diagnosis: Array.isArray(prev.diagnosis) ? prev.diagnosis.filter((x) => x !== dU) : [],
+      }));
+      return;
+    }
+    if (cur.length >= 2) {
+      alert("You can select up to 2 conditions");
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      diagnosis: Array.isArray(prev.diagnosis) ? [...prev.diagnosis, dU] : [dU],
+    }));
+    // clear typed letters and hide the dropdown after a selection
+    setSearchTerm("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Basic validation for required fields when submitting via JS
+    const selectedReasons = (formData as any).diagnosis;
+    const hasReason = Array.isArray(selectedReasons)
+      ? selectedReasons.length > 0
+      : !!selectedReasons;
+    if (!formData.patientName || !(formData as any).labResults || !hasReason) {
+      setLoading(false);
+      alert("Please fill required fields: Patient name, Lab results, and Reason for Referral.");
+      return;
+    }
 
     try {
       // Helper: generate 6-char alphanumeric token
@@ -130,7 +253,9 @@ export default function CreateReferralPage({
         patientId: formData.patientId || undefined,
         medicalHistory: formData.medicalHistory,
         labResults: formData.labResults,
-        diagnosis: formData.diagnosis,
+        diagnosis: Array.isArray(formData.diagnosis)
+          ? (formData.diagnosis as string[]).join("; ")
+          : formData.diagnosis,
         referringHospital: formData.referringHospital,
         receivingFacility: formData.receivingFacility,
         priority: formData.priority,
@@ -155,15 +280,15 @@ export default function CreateReferralPage({
 
       setTimeout(() => {
         setFormData({
-          patientName: "",
-          patientId: "",
-          medicalHistory: "",
-          labResults: "",
-          diagnosis: "",
-          referringHospital: physician.hospital,
-          receivingFacility: "",
-          priority: "Routine",
-        });
+            patientName: "",
+            patientId: "",
+            medicalHistory: "",
+            labResults: "",
+            diagnosis: [],
+            referringHospital: physician.hospital,
+            receivingFacility: "",
+            priority: "Routine",
+          });
         setSuccess(false);
       }, 2000);
     } finally {
@@ -282,15 +407,66 @@ export default function CreateReferralPage({
                   <label className="block text-sm font-medium text-text-primary mb-2">
                     Reason for Referral *
                   </label>
-                  <textarea
-                    name="diagnosis"
-                    value={(formData as any).diagnosis}
-                    onChange={handleChange}
-                    required
-                    placeholder="Provide reason for referral"
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="w-full">
+                    <div className="border border-gray-200 rounded bg-white">
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="type the condition"
+                        className="w-full px-3 py-2 text-sm focus:outline-none"
+                        disabled={Array.isArray(formData.diagnosis) && formData.diagnosis.length >= 2}
+                      />
+                      {searchTerm.trim().length > 0 && (
+                        <div className="max-h-40 overflow-y-auto">
+                          <ul className="divide-y">
+                            {diseases
+                              .filter((d) =>
+                                d.toLowerCase().includes(searchTerm.toLowerCase()),
+                              )
+                              .map((d) => (
+                                <li
+                                  key={d}
+                                  onClick={() => toggleDiagnosis(d)}
+                                  className={`p-2 cursor-pointer text-sm ${
+                                    Array.isArray((formData as any).diagnosis) &&
+                                    (formData as any).diagnosis.includes(d.toUpperCase())
+                                      ? "bg-blue-50 font-semibold"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  {d.toUpperCase()}
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="hidden"
+                      name="diagnosis"
+                      value={Array.isArray((formData as any).diagnosis) ? (formData as any).diagnosis.join('; ') : (formData as any).diagnosis}
+                    />
+                    <div className="mt-2">
+                      {Array.isArray((formData as any).diagnosis) && (formData as any).diagnosis.length > 0 ? (
+                        <div className="flex gap-2 flex-wrap">
+                          {(formData as any).diagnosis.map((d: string) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => toggleDiagnosis(d)}
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-sm text-primary border"
+                            >
+                              <span>{d}</span>
+                              <span className="text-xs text-gray-500">✕</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-text-secondary">Selected: None</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

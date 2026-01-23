@@ -29,14 +29,14 @@ export default function CompletedReferralsPage() {
 
   const loadCompleted = () => {
     const all = Array.from(db.referrals.values()).filter(
-      (r: any) => r.status === "confirmed",
+      (r: any) => r.status === "confirmed" || r.status === "paid",
     );
     setCompleted(all);
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-warning mb-6">Confirmed Referrals</h2>
+      <h2 className="text-2xl font-bold text-warning mb-6">Confirmed / Paid Referrals</h2>
 
       {completed.length === 0 ? (
         <Card className="p-8 text-center">
@@ -60,7 +60,7 @@ export default function CompletedReferralsPage() {
                 <div className="text-right">
                   <p className="text-sm font-mono">{ref.referralToken || ""}</p>
                 <p className="text-xs text-text-secondary">
-                  Confirmed: {ref.completedAt || new Date(ref.updatedAt).toLocaleString()}
+                  {ref.status === 'paid' ? 'Paid:' : 'Confirmed:'} {ref.completedAt || ref.paidAt || new Date(ref.updatedAt).toLocaleString()}
                 </p>
                 </div>
               </div>

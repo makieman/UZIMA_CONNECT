@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { db } from "../../lib/db";
@@ -17,14 +17,37 @@ export default function PendingReferralsPage({
   onBack,
 }: PendingReferralsProps) {
   const [selectedReferral, setSelectedReferral] = useState<any>(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setTick((t) => t + 1);
+    if (typeof window !== "undefined") {
+      window.addEventListener("referral:created", handler as EventListener);
+      window.addEventListener("referral:completed", handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("referral:created", handler as EventListener);
+        window.removeEventListener("referral:completed", handler as EventListener);
+      }
+    };
+  }, []);
 
   const pendingReferrals = useMemo(() => {
     return Array.from(db.referrals.values()).filter(
-      (ref: any) =>
-        ref.physicianId === physician.id &&
-        ref.status === "Pending Admin Approval",
+      (ref: any) => {
+        if (ref.physicianId !== physician.id) return false;
+        const s = (ref.status || "").toString().toLowerCase();
+        return (
+          s === "pending-admin" ||
+          s === "pending admin approval" ||
+          s === "pending-payment" ||
+          s === "awaiting-biodata" ||
+          s === "awaiting biodata"
+        );
+      },
     );
-  }, [physician.id]);
+  }, [physician.id, tick]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

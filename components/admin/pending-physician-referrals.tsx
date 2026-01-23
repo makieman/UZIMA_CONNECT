@@ -16,7 +16,6 @@ export default function PendingPhysicianReferrals() {
     stkPhoneNumber: "",
     patientDateOfBirth: "",
     patientNationalId: "",
-    bookedSlot: "",
     bookedDate: "",
   });
   const [editPhoneData, setEditPhoneData] = useState({
@@ -131,7 +130,6 @@ export default function PendingPhysicianReferrals() {
       stkPhoneNumber: referral.stkPhoneNumber || "",
       patientDateOfBirth: referral.patientDateOfBirth || "",
       patientNationalId: referral.patientNationalId || "",
-      bookedSlot: referral.bookedSlot || "",
       bookedDate: referral.bookedDate || "",
     });
     setShowBiodataModal(true);
@@ -153,7 +151,6 @@ export default function PendingPhysicianReferrals() {
         referral.stkPhoneNumber = biodataForm.stkPhoneNumber;
         referral.patientDateOfBirth = biodataForm.patientDateOfBirth;
         referral.patientNationalId = biodataForm.patientNationalId;
-        referral.bookedSlot = biodataForm.bookedSlot;
         referral.bookedDate = biodataForm.bookedDate;
         referral.status = "pending-payment";
         referral.updatedAt = new Date();
@@ -254,8 +251,9 @@ export default function PendingPhysicianReferrals() {
   const handleConfirmPayment = (referral: any) => {
     const updated = db.referrals.get(referral.id);
     if (updated) {
-      updated.status = "confirmed";
+      updated.status = "paid";
       updated.updatedAt = new Date();
+      updated.paidAt = new Date();
       updated.completedAt = new Date();
       db.referrals.set(referral.id, updated);
       // notify listeners so completed list updates immediately
@@ -393,9 +391,7 @@ export default function PendingPhysicianReferrals() {
                   </div>
                   {referral.bookedDate && (
                     <div className="text-xs">
-                      <p className="text-text-secondary">
-                        Booked: {referral.bookedDate} {referral.bookedSlot}
-                      </p>
+                      <p className="text-text-secondary">Booked: {referral.bookedDate}</p>
                     </div>
                   )}
                   {referral.status === "pending-payment" && (
@@ -558,23 +554,7 @@ export default function PendingPhysicianReferrals() {
                     className="input-base"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Time Slot
-                  </label>
-                  <input
-                    type="text"
-                    value={biodataForm.bookedSlot}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        bookedSlot: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                    placeholder="e.g., 09:00-10:00"
-                  />
-                </div>
+                
               </div>
             </div>
 

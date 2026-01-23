@@ -50,11 +50,19 @@ export async function login(
       return { success: true, user, token };
     }
   } else if (role === "physician") {
-    if (credentials.email === "dr.kipchoge@hospital.ke") {
-      const user = db.physicians.get("physician-001");
-      if (!user) {
-        return { success: false, error: "Physician not found in database" };
-      }
+    // Allow login by email or by licenseId (or the numeric suffix of licenseId)
+    const identifier = (credentials.email || "").toString().trim();
+    const physicians = Array.from(db.physicians.values());
+    const user = physicians.find((p: any) => {
+      if (!p) return false;
+      if (p.email === identifier) return true;
+      if (p.licenseId === identifier) return true;
+      // allow entering the numeric part of a license (e.g., '56845' for 'PH-56845')
+      if (p.licenseId && identifier && p.licenseId.toString().endsWith(identifier)) return true;
+      return false;
+    });
+
+    if (user) {
       const token = generateToken();
       const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
       sessions.set(token, { userId: user.id, role, expiresAt });

@@ -62,7 +62,11 @@ export default function PhysicianDashboard({
               Physician Portal
             </h1>
             <p className="text-lg text-text-secondary">
-              Welcome, Dr. {user.fullName}
+              {(() => {
+                const raw = String(user?.fullName || "");
+                const name = raw.replace(/^Dr\.?\s*/i, "");
+                return `Welcome, Dr. ${name}`;
+              })()}
             </p>
             <p className="text-sm text-text-secondary">{user.hospital}</p>
           </div>
