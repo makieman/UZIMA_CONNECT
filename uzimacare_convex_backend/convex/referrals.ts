@@ -53,8 +53,10 @@ export const createReferral = mutation({
       token = generateToken();
     }
 
+    const { demoUserId, ...referralData } = args;
+    
     const referralId = await ctx.db.insert("referrals", {
-      ...args,
+      ...referralData,
       status: "pending-admin",
       referralToken: token,
       stkSentCount: 0,
@@ -157,7 +159,7 @@ export const updateReferralStatus = mutation({
     // SECURITY: Require physician or admin
     await requireRole(ctx, ["physician", "admin"], args.demoUserId);
 
-    const { referralId, ...updates } = args;
+    const { referralId, demoUserId, ...updates } = args;
 
     // Add completion timestamp if status is completed or paid
     if (updates.status === "completed" || updates.status === "paid") {
