@@ -23,5 +23,17 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment files and folders
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# Environment folder
+environment/
+env/
+
 # Ignored for the template, you probably want to remove it:
 package-lock.json
