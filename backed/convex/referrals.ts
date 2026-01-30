@@ -133,7 +133,7 @@ export const getPendingReferrals = query({
   },
 });
 
-// Update referral status
+// Update referral status only
 export const updateReferralStatus = mutation({
   args: {
     referralId: v.id("referrals"),
@@ -146,8 +146,48 @@ export const updateReferralStatus = mutation({
       v.literal("completed"),
       v.literal("cancelled")
     ),
-    patientPhone: v.optional(v.string()),
-    stkPhoneNumber: v.optional(v.string()),
+    demoUserId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // SECURITY: Require physician or admin
+    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+
+    const { referralId, demoUserId, status } = args;
+
+    // Get referral details before update
+    const referral = await ctx.db.get(referralId);
+    if (!referral) {
+      throw new Error("Referral not found");
+    }
+
+    const updates: any = {
+      status,
+      updatedAt: Date.now(),
+    };
+
+    // Add completion timestamp if status is completed or paid
+    if (status === "completed" || status === "paid") {
+      updates.completedAt = Date.now();
+      if (status === "paid") {
+        updates.paidAt = Date.now();
+      }
+    }
+
+    await ctx.db.patch(referralId, updates);
+
+    // AUDIT: Log status update
+    await logAudit(ctx, "update_referral_status", { status }, referralId);
+
+    return await ctx.db.get(referralId);
+  },
+});
+
+// Save biodata and transition to pending-payment
+export const saveBiodata = mutation({
+  args: {
+    referralId: v.id("referrals"),
+    patientPhone: v.string(),
+    stkPhoneNumber: v.string(),
     patientDateOfBirth: v.optional(v.string()),
     patientNationalId: v.optional(v.string()),
     bookedDate: v.optional(v.string()),
@@ -156,23 +196,58 @@ export const updateReferralStatus = mutation({
     demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+    // SECURITY: Require admin role
+    await requireRole(ctx, ["admin"], args.demoUserId);
 
-    const { referralId, demoUserId, ...updates } = args;
+    const { referralId, demoUserId, ...biodata } = args;
 
-    // Add completion timestamp if status is completed or paid
-    if (updates.status === "completed" || updates.status === "paid") {
-      (updates as any).completedAt = Date.now();
-      if (updates.status === "paid") {
-        (updates as any).paidAt = Date.now();
-      }
+    const referral = await ctx.db.get(referralId);
+    if (!referral) {
+      throw new Error("Referral not found");
     }
 
-    await ctx.db.patch(referralId, updates);
+    // Update biodata fields and transition status
+    await ctx.db.patch(referralId, {
+      ...biodata,
+      status: "pending-payment",
+    });
 
-    // AUDIT: Log status update
-    await logAudit(ctx, "update_referral_status", { status: updates.status }, referralId);
+    // AUDIT: Log biodata save
+    await logAudit(ctx, "save_biodata", { 
+      patientPhone: biodata.patientPhone,
+      stkPhoneNumber: biodata.stkPhoneNumber,
+      biodataCode: biodata.biodataCode 
+    }, referralId);
+
+    return await ctx.db.get(referralId);
+  },
+});
+
+// Update phone numbers only
+export const updatePhoneNumbers = mutation({
+  args: {
+    referralId: v.id("referrals"),
+    patientPhone: v.string(),
+    stkPhoneNumber: v.string(),
+    demoUserId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // SECURITY: Require admin role
+    await requireRole(ctx, ["admin"], args.demoUserId);
+
+    const { referralId, demoUserId, ...phones } = args;
+
+    const referral = await ctx.db.get(referralId);
+    if (!referral) {
+      throw new Error("Referral not found");
+    }
+
+    await ctx.db.patch(referralId, {
+      ...phones,
+    });
+
+    // AUDIT: Log phone update
+    await logAudit(ctx, "update_phone_numbers", phones, referralId);
 
     return await ctx.db.get(referralId);
   },

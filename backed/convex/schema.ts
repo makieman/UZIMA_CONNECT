@@ -10,6 +10,8 @@ const applicationTables = {
     phoneNumber: v.optional(v.string()),
     fullName: v.string(),
     isActive: v.boolean(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_email", ["email"])
     .index("by_phone", ["phoneNumber"])
@@ -22,6 +24,8 @@ const applicationTables = {
     hospital: v.string(),
     specialization: v.optional(v.string()),
     isVerified: v.boolean(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_license", ["licenseId"]),
@@ -32,6 +36,8 @@ const applicationTables = {
     dateOfBirth: v.optional(v.string()),
     nationalId: v.optional(v.string()),
     emergencyContact: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"]),
 
@@ -43,6 +49,8 @@ const applicationTables = {
     maxPatientsPerDay: v.number(),
     contactPhone: v.optional(v.string()),
     isActive: v.boolean(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_location", ["location"])
     .index("by_active", ["isActive"]),
@@ -78,6 +86,8 @@ const applicationTables = {
     completedAt: v.optional(v.number()),
     paidAt: v.optional(v.number()),
     biodataCode: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_physician", ["physicianId"])
     .index("by_status", ["status"])
@@ -106,6 +116,8 @@ const applicationTables = {
     mpesaTransactionId: v.optional(v.string()),
     stkSentCount: v.number(),
     expiresAt: v.number(),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_patient", ["patientId"])
     .index("by_clinic_date", ["clinicId", "bookingDate"])
@@ -129,6 +141,8 @@ const applicationTables = {
       bookingId: v.optional(v.string()),
       referralId: v.optional(v.string()),
     })),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_read", ["userId", "isRead"]),
@@ -143,6 +157,8 @@ const applicationTables = {
     status: v.union(v.literal("pending"), v.literal("completed"), v.literal("failed")),
     stkRequestId: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_booking", ["bookingId"])
     .index("by_referral", ["referralId"])

@@ -1,8 +1,8 @@
-import { mutation } from "./_generated/server";
+import { action } from "./_generated/server";
 import { v } from "convex/values";
 
-// STK Push mutation for M-Pesa payments
-export const initiateSTKPush = mutation({
+// STK Push action for M-Pesa payments
+export const initiateSTKPush = action({
   args: {
     phoneNumber: v.string(),
     amount: v.number(),
@@ -76,28 +76,21 @@ export const initiateSTKPush = mutation({
 
       const stkData = await stkResponse.json();
 
-      // Step 4: Update referral with STK phone number and increment count
-      await ctx.db.patch(args.referralId, {
-        stkPhoneNumber: args.phoneNumber,
-        stkSentCount: 1
-      });
-
-      // Step 5: Create payment record
-      await ctx.db.insert("payments", {
-        referralId: args.referralId,
-        phoneNumber: args.phoneNumber,
-        amount: args.amount,
-        status: "pending",
-        stkRequestId: stkData.CheckoutRequestID
-      });
-
+      // Return API response (no database operations in action)
       return {
         success: true,
         message: "STK Push initiated successfully",
         merchantRequestId: stkData.MerchantRequestID,
         checkoutRequestId: stkData.CheckoutRequestID,
         responseCode: stkData.ResponseCode,
-        responseDescription: stkData.ResponseDescription
+        responseDescription: stkData.ResponseDescription,
+        // Include data for database operations to be handled separately
+        referralData: {
+          referralId: args.referralId,
+          phoneNumber: args.phoneNumber,
+          amount: args.amount,
+          stkRequestId: stkData.CheckoutRequestID
+        }
       };
 
     } catch (error) {
