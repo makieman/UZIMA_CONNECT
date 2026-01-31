@@ -43,7 +43,42 @@ export default function PhysicianLogin({
       <Card className="w-full max-w-md p-8 shadow-lg">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2 text-center">
-            <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px black', textStroke: '1px black' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px black', textStroke: '1px black' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+            <span
+              className="text-black"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              UZ
+            </span>
+            <span
+              className="text-white"
+              style={{ WebkitTextStroke: "1px black", textStroke: "1px black" }}
+            >
+              I
+            </span>
+            <span
+              className="text-red-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              MA
+            </span>
+            <span
+              className="text-white"
+              style={{ WebkitTextStroke: "1px black", textStroke: "1px black" }}
+            >
+              C
+            </span>
+            <span
+              className="text-green-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              A
+            </span>
+            <span
+              className="text-green-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              RE
+            </span>
           </h1>
           <p className="text-text-secondary">Physician Portal</p>
         </div>

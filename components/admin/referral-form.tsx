@@ -312,7 +312,7 @@ export default function ReferralForm() {
             name="reason"
             value={formData.reason}
             onChange={handleChange}
-            className="input-base min-h-[100px]"
+            className="input-base min-h-25"
             placeholder="Medical reason for referral"
             required
           />

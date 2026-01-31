@@ -10,14 +10,51 @@ interface RoleSelectorProps {
 
 export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary-light flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-primary to-primary-light flex items-center justify-center p-4">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-2 text-center">
-            <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+            <span
+              className="text-black"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              UZ
+            </span>
+            <span
+              className="text-white"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              I
+            </span>
+            <span
+              className="text-red-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              MA
+            </span>
+            <span
+              className="text-white"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              C
+            </span>
+            <span
+              className="text-green-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              A
+            </span>
+            <span
+              className="text-green-600"
+              style={{ WebkitTextStroke: "1px white" }}
+            >
+              RE
+            </span>
           </h1>
-          <p className="text-lg text-purple-100">A HEALTHCARE REFERRAL SYSTEM</p>
+          <p className="text-lg text-purple-100">
+            A HEALTHCARE REFERRAL SYSTEM
+          </p>
         </div>
 
         {/* Role Cards */}
