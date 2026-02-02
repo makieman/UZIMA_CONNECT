@@ -39,7 +39,7 @@ export default function PhysicianLogin({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-lg">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2 text-center">
@@ -51,7 +51,7 @@ export default function PhysicianLogin({
             </span>
             <span
               className="text-white"
-              style={{ WebkitTextStroke: "1px black", textStroke: "1px black" }}
+              style={{ WebkitTextStroke: "1px black" }}
             >
               I
             </span>
@@ -63,7 +63,7 @@ export default function PhysicianLogin({
             </span>
             <span
               className="text-white"
-              style={{ WebkitTextStroke: "1px black", textStroke: "1px black" }}
+              style={{ WebkitTextStroke: "1px black" }}
             >
               C
             </span>
