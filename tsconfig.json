@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -13,10 +9,12 @@
     "incremental": true,
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "resolveJsonModule": true,
+
     "plugins": [
       {
         "name": "next"
@@ -24,7 +22,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@convex/*": ["./convex-client/*"]
     }
   },
   "include": [
@@ -35,7 +34,5 @@
     "**/*.ts",
     "**/*.tsx"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

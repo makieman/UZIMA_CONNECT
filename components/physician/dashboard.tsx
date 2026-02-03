@@ -53,7 +53,7 @@ export default function PhysicianDashboard({
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+    <div className="bg-linear-to-br from-blue-50 to-blue-100 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
@@ -99,7 +99,7 @@ export default function PhysicianDashboard({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2">Create New Referral</h3>
-              <p className="text-text-secondary mb-4 flex-grow">
+              <p className="text-text-secondary mb-4 grow">
                 Send patient referral to another facility
               </p>
               <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
@@ -130,7 +130,7 @@ export default function PhysicianDashboard({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2">Pending Referrals</h3>
-              <p className="text-text-secondary mb-4 flex-grow">
+              <p className="text-text-secondary mb-4 grow">
                 Awaiting administration approval and forwarding
               </p>
               <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white">
@@ -161,7 +161,7 @@ export default function PhysicianDashboard({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2">Completed Referrals</h3>
-              <p className="text-text-secondary mb-4 flex-grow">
+              <p className="text-text-secondary mb-4 grow">
                 Successfully delivered to receiving facilities
               </p>
               <Button className="w-full bg-green-500 hover:bg-green-600 text-white">

@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -21,6 +23,9 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
 
   const isActive = (href: string) => {
     if (href.startsWith("#")) return false;
@@ -70,16 +75,37 @@ export default function Header() {
 
         {/* Auth / CTA Buttons – Desktop */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Login
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button size="sm" className="bg-primary hover:bg-primary/90">
-              Dashboard
-            </Button>
-          </Link>
+          {isLoading ? (
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          ) : isAuthenticated ? (
+            <>
+              <Link href="/dashboard">
+                <Button size="sm" className="bg-primary hover:bg-primary/90">
+                  Dashboard
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut()} // ← fixed: no {redirectTo}
+              >
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="outline" size="sm">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu toggle */}
@@ -128,16 +154,37 @@ export default function Header() {
             ))}
 
             <div className="flex flex-col gap-4 pt-4 border-t">
-              <Link href="/login">
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button className="bg-primary hover:bg-primary/90 w-full">
-                  Dashboard
-                </Button>
-              </Link>
+              {isLoading ? (
+                <span className="text-center text-muted-foreground">
+                  Loading...
+                </span>
+              ) : isAuthenticated ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button className="bg-primary hover:bg-primary/90 w-full">
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => signOut()} // ← fixed here too
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="outline" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button className="w-full">Sign Up</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

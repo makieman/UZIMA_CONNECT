@@ -29,7 +29,42 @@ export default function AdminDashboard({
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-center">
-              <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>I</span><span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span><span className="text-white" style={{ WebkitTextStroke: '1px white' }}>C</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span><span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
+              <span
+                className="text-black"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                UZ
+              </span>
+              <span
+                className="text-white"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                I
+              </span>
+              <span
+                className="text-red-600"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                MA
+              </span>
+              <span
+                className="text-white"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                C
+              </span>
+              <span
+                className="text-green-600"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                A
+              </span>
+              <span
+                className="text-green-600"
+                style={{ WebkitTextStroke: "1px white" }}
+              >
+                RE
+              </span>
               <div className="text-sm mt-2">Administration Portal</div>
             </h1>
             <p className="text-amber-100">Referral & Booking Management</p>
@@ -121,7 +156,6 @@ export default function AdminDashboard({
 
         {currentView === "pending-referrals" && <PendingPhysicianReferrals />}
         {currentView === "calendar" && <CalendarView />}
-        
       </main>
     </div>
   );
