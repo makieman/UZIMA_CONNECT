@@ -88,7 +88,7 @@ export default function ReferralsList() {
                   <div>
                     <p className="font-medium">Patient #{booking.patientId}</p>
                     <p className="text-xs text-text-secondary">
-                      {booking.id.slice(-6)}
+                      {booking._id.slice(-6)}
                     </p>
                   </div>
                 </td>
