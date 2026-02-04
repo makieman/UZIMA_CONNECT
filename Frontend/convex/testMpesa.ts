@@ -1,4 +1,5 @@
 import { action } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // Simple test action to verify M-Pesa environment variables are loaded
 export const testEnvVars = action({
@@ -36,10 +37,8 @@ export const testEnvVars = action({
 
 export const testSms = action({
     args: {},
-    handler: async (ctx) => {
+    handler: async (ctx): Promise<any> => {
         console.log("Testing SMS Sending...");
-
-        const { api } = await import("./_generated/api");
 
         try {
             const result = await ctx.runAction((api as any).actions.notifications.sendPaymentConfirmationSMS, {
