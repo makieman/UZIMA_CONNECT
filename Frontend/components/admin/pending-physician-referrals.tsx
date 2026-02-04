@@ -397,10 +397,10 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
                   <>
                     <Button
                       onClick={() => handleResendSTK(referral)}
-                      disabled={resending === referral.id}
+                      disabled={resending === referral._id}
                       className="btn-secondary text-xs"
                     >
-                      {resending === referral.id ? "Sending..." : "Resend STK"}
+                      {resending === referral._id ? "Sending..." : "Resend STK"}
                     </Button>
                     <Button
                       onClick={() => handleEditPhone(referral)}
