@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convex Function Test</title>
+</head>
+<body>
+    <h1>Convex Function Test</h1>
+    <button onclick="testFunctions()">Test All Functions</button>
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/convex@1.8.4/dist/browser.js"></script>
+    <script>
+        const convex = new Convex.ConvexClient("https://fearless-kudu-656.convex.cloud");
+
+        async function testFunctions() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = "Testing Convex functions...";
+
+            const tests = [
+                { name: "users:getUserByEmail", fn: () => convex.query("users:getUserByEmail", { email: "admin@uzimacare.ke" }) },
+                { name: "stats:getAdminStats", fn: () => convex.query("stats:getAdminStats", { demoUserId: "test" }) },
+                { name: "referrals:getPendingReferrals", fn: () => convex.query("referrals:getPendingReferrals", { demoUserId: "test" }) },
+                { name: "actions/mpesa:initiateSTKPush", fn: () => convex.action("actions/mpesa:initiateSTKPush", {
+                    phoneNumber: "254708374149",
+                    amount: 1,
+                    referralId: "test_referral_123",
+                    patientName: "Test Patient",
+                    useTestCallback: true
+                })}
+            ];
+
+            let results = "<h3>Test Results:</h3>";
+
+            for (const test of tests) {
+                try {
+                    const result = await test.fn();
+                    results += `<p><strong>${test.name}:</strong> ✅ Success</p>`;
+                    console.log(`${test.name} result:`, result);
+                } catch (error) {
+                    results += `<p><strong>${test.name}:</strong> ❌ ${error.message}</p>`;
+                    console.error(`${test.name} error:`, error);
+                }
+            }
+
+            resultDiv.innerHTML = results;
+        }
+    </script>
+</body>
+</html>
