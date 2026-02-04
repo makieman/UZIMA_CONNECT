@@ -46,6 +46,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "convex": "^1.31.6",
+    "@convex-dev/auth": "^0.0.80",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
@@ -74,5 +75,14 @@
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
-  }
+  },
+  "description": "",
+  "main": "postcss.config.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }
