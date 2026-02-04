@@ -9,19 +9,23 @@
  */
 
 import type * as actions_mpesa from "../actions/mpesa.js";
+import type * as actions_notifications from "../actions/notifications.js";
 import type * as audit from "../audit.js";
 import type * as auth from "../auth.js";
 import type * as bookings from "../bookings.js";
 import type * as clinics from "../clinics.js";
 import type * as crons from "../crons.js";
 import type * as darajaTest from "../darajaTest.js";
+import type * as debug from "../debug.js";
 import type * as debugStk from "../debugStk.js";
+import type * as debugStkError from "../debugStkError.js";
 import type * as directStkTest from "../directStkTest.js";
 import type * as http from "../http.js";
 import type * as mpesa from "../mpesa.js";
 import type * as mpesaApi from "../mpesaApi.js";
 import type * as mpesaCallbacks from "../mpesaCallbacks.js";
 import type * as mutations_mpesa from "../mutations/mpesa.js";
+import type * as mutations_payments from "../mutations/payments.js";
 import type * as notifications from "../notifications.js";
 import type * as paymentTracking from "../paymentTracking.js";
 import type * as payments from "../payments.js";
@@ -32,10 +36,12 @@ import type * as referralPayments from "../referralPayments.js";
 import type * as referrals from "../referrals.js";
 import type * as router from "../router.js";
 import type * as seedData from "../seedData.js";
+import type * as simpleTest from "../simpleTest.js";
 import type * as stats from "../stats.js";
 import type * as stkDbOperations from "../stkDbOperations.js";
 import type * as stkTest from "../stkTest.js";
 import type * as testMpesa from "../testMpesa.js";
+import type * as testMpesaAuth from "../testMpesaAuth.js";
 import type * as users from "../users.js";
 
 import type {
@@ -46,19 +52,23 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/mpesa": typeof actions_mpesa;
+  "actions/notifications": typeof actions_notifications;
   audit: typeof audit;
   auth: typeof auth;
   bookings: typeof bookings;
   clinics: typeof clinics;
   crons: typeof crons;
   darajaTest: typeof darajaTest;
+  debug: typeof debug;
   debugStk: typeof debugStk;
+  debugStkError: typeof debugStkError;
   directStkTest: typeof directStkTest;
   http: typeof http;
   mpesa: typeof mpesa;
   mpesaApi: typeof mpesaApi;
   mpesaCallbacks: typeof mpesaCallbacks;
   "mutations/mpesa": typeof mutations_mpesa;
+  "mutations/payments": typeof mutations_payments;
   notifications: typeof notifications;
   paymentTracking: typeof paymentTracking;
   payments: typeof payments;
@@ -69,10 +79,12 @@ declare const fullApi: ApiFromModules<{
   referrals: typeof referrals;
   router: typeof router;
   seedData: typeof seedData;
+  simpleTest: typeof simpleTest;
   stats: typeof stats;
   stkDbOperations: typeof stkDbOperations;
   stkTest: typeof stkTest;
   testMpesa: typeof testMpesa;
+  testMpesaAuth: typeof testMpesaAuth;
   users: typeof users;
 }>;
 
