@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run sync:backend && next build",
     "start": "next start",
     "lint": "eslint .",
     "dev:backend": "cd \"../Backend\" && npx convex dev",
-    "sync:backend": "xcopy \"..\\Backend\\convex\" \"convex\" /E /I /Y",
+    "sync:backend": "convex codegen",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\""
   },
   "dependencies": {
