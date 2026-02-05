@@ -37,6 +37,7 @@ export const testEnvVars = action({
 });
 
 // Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
+// Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
 export const testSms = action({
     args: {
         phoneNumber: v.optional(v.string()),
@@ -44,10 +45,12 @@ export const testSms = action({
         amount: v.optional(v.number()),
         token: v.optional(v.string()),
     },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args): Promise<any> => {
         console.log("Testing SMS Sending...");
 
-        const result = await ctx.runAction((api as any).actions.notifications.sendPaymentConfirmationSMS, {
+        // Using a local variable for api to help with type inference in circular calls
+        const anyApi: any = api;
+        const result: any = await ctx.runAction(anyApi.actions.notifications.sendPaymentConfirmationSMS, {
             phoneNumber: args.phoneNumber ?? "+254711123456",
             name: args.name ?? "Test User",
             amount: args.amount ?? 1,

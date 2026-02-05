@@ -1,4 +1,5 @@
 import { action } from "./_generated/server";
+import { v } from "convex/values";
 import { api } from "./_generated/api";
 
 // Simple test action to verify M-Pesa environment variables are loaded
@@ -35,24 +36,29 @@ export const testEnvVars = action({
     }
 });
 
+// Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
+// Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
 export const testSms = action({
-    args: {},
-    handler: async (ctx): Promise<any> => {
+    args: {
+        phoneNumber: v.optional(v.string()),
+        name: v.optional(v.string()),
+        amount: v.optional(v.number()),
+        token: v.optional(v.string()),
+    },
+    handler: async (ctx, args): Promise<any> => {
         console.log("Testing SMS Sending...");
 
-        try {
-            const result = await ctx.runAction((api as any).actions.notifications.sendPaymentConfirmationSMS, {
-                phoneNumber: "+254711123456", // Test number
-                name: "Test User",
-                amount: 100,
-                token: "TEST-TOKEN-123"
-            });
+        // Using a local variable for api to help with type inference in circular calls
+        const anyApi: any = api;
+        const result: any = await ctx.runAction(anyApi.actions.notifications.sendPaymentConfirmationSMS, {
+            phoneNumber: args.phoneNumber ?? "+254711123456",
+            name: args.name ?? "Test User",
+            amount: args.amount ?? 1,
+            token: args.token ?? "TEST-TOKEN-123",
+        });
 
-            console.log("SMS Test Result:", result);
-            return result;
-        } catch (error) {
-            console.error("SMS Test Failed:", error);
-            return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-        }
-    }
+        console.log("SMS Test Result:", result);
+        return result;
+    },
 });
+

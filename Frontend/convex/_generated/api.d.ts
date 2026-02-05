@@ -16,6 +16,7 @@ import type * as bookings from "../bookings.js";
 import type * as clinics from "../clinics.js";
 import type * as crons from "../crons.js";
 import type * as darajaTest from "../darajaTest.js";
+import type * as debug from "../debug.js";
 import type * as debugStk from "../debugStk.js";
 import type * as debugStkError from "../debugStkError.js";
 import type * as directStkTest from "../directStkTest.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   clinics: typeof clinics;
   crons: typeof crons;
   darajaTest: typeof darajaTest;
+  debug: typeof debug;
   debugStk: typeof debugStk;
   debugStkError: typeof debugStkError;
   directStkTest: typeof directStkTest;

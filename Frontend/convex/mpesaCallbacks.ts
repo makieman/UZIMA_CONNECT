@@ -89,12 +89,12 @@ export const mpesaCallback = httpAction(async (ctx, request) => {
 });
 
 // HTTP Routes
-const http = httpRouter();
+// const http = httpRouter();
 
-http.route({
-  path: "/api/stk-callback",
-  method: "POST",
-  handler: mpesaCallback,
-});
+// http.route({
+//   path: "/api/stk-callback",
+//   method: "POST",
+//   handler: mpesaCallback,
+// });
 
-export default http;
+// export default http;

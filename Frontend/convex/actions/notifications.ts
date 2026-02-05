@@ -70,11 +70,18 @@ Thank you.`;
                 }),
             });
 
-            const data = await response.json();
-            console.log("Africa's Talking response:", JSON.stringify(data));
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log("Africa's Talking response:", JSON.stringify(data));
+            } catch (e) {
+                console.error("Failed to parse Africa's Talking response as JSON:", responseText);
+                throw new Error(`Africa's Talking API error (non-JSON response): ${responseText}`);
+            }
 
             if (!response.ok) {
-                throw new Error(`Africa's Talking API error: ${response.status} ${response.statusText}`);
+                throw new Error(`Africa's Talking API error: ${response.status} ${response.statusText} - ${responseText}`);
             }
 
             // Africa's Talking returns success in the payload even if HTTP 200
