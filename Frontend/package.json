@@ -12,6 +12,7 @@
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\""
   },
   "dependencies": {
+    "@auth/core": "^0.34.2",
     "@convex-dev/auth": "^0.0.90",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
