@@ -53,6 +53,9 @@ export const mpesaCallback = httpAction(async (ctx, request) => {
           name: result.patientName,
           amount: result.amount,
           token: result.referralToken,
+          date: result.date || "N/A",
+          time: result.time || "N/A",
+          clinic: result.clinic || "Afiya Connect",
         });
         console.log(`SMS trigger scheduled for ${result.phoneNumber}`);
       } catch (smsError) {

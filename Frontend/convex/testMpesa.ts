@@ -55,6 +55,9 @@ export const testSms = action({
             name: args.name ?? "Test User",
             amount: args.amount ?? 1,
             token: args.token ?? "TEST-TOKEN-123",
+            date: "2024-01-01",
+            time: "10:00 AM",
+            clinic: "Test Clinic",
         });
 
         console.log("SMS Test Result:", result);

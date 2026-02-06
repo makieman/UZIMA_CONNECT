@@ -66,6 +66,9 @@ export const processPaymentResult = mutation({
             updatedAt: Date.now(),
         });
 
+        let bookingDate = "";
+        let bookingTime = "";
+        let clinicName = "";
         let patientName = "Patient";
         let referralToken = "";
 
@@ -88,6 +91,15 @@ export const processPaymentResult = mutation({
             if (payment.bookingId) {
                 const booking = await ctx.db.get(payment.bookingId);
                 if (booking) {
+                    bookingDate = booking.bookingDate;
+                    bookingTime = booking.bookingTime;
+
+                    // Fetch clinic name
+                    const clinic: any = await ctx.db.get(booking.clinicId as any);
+                    if (clinic) {
+                        clinicName = clinic.name || clinic.facilityName;
+                    }
+
                     if (booking.referralId && patientName === "Patient") {
                         const ref = await ctx.db.get(booking.referralId);
                         if (ref) {
@@ -115,7 +127,10 @@ export const processPaymentResult = mutation({
             amount: payment.amount,
             phoneNumber: payment.phoneNumber,
             patientName,
-            referralToken
+            referralToken,
+            date: bookingDate,
+            time: bookingTime,
+            clinic: clinicName
         };
     },
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 import { useRouter } from "next/navigation";
 import { clearAuthState } from "@/lib/storage";
@@ -24,14 +25,13 @@ export default function PhysicianLayout({
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <h1 className="text-2xl font-bold flex items-center gap-2">
-                            <span className="flex items-center">
-                                <span className="text-black" style={{ WebkitTextStroke: '1px white' }}>UZ</span>
-                                <span className="text-white" style={{ WebkitTextStroke: '1px white' }}>I</span>
-                                <span className="text-red-600" style={{ WebkitTextStroke: '1px white' }}>MA</span>
-                                <span className="text-white" style={{ WebkitTextStroke: '1px white' }}>C</span>
-                                <span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>A</span>
-                                <span className="text-green-600" style={{ WebkitTextStroke: '1px white' }}>RE</span>
-                            </span>
+                            <Image
+                                src="/logo/logo.png"
+                                alt="UzimaCare Logo"
+                                width={200}
+                                height={60}
+                                className="h-14 w-auto brightness-0"
+                            />
                         </h1>
                         <span className="h-6 w-px bg-white/20"></span>
                         <div>

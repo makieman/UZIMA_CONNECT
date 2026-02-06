@@ -3,6 +3,7 @@
 import type { UserRole } from "../../lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface RoleSelectorProps {
   onSelectRole: (role: UserRole) => void;
@@ -14,6 +15,16 @@ export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="text-center mb-16">
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/logo/logo.png"
+              alt="UzimaCare Logo"
+              width={280}
+              height={100}
+              className="h-20 w-auto brightness-0"
+              priority
+            />
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 tracking-tight">
             Select Your Portal
           </h1>

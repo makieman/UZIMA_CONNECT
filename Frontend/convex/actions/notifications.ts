@@ -27,6 +27,9 @@ export const sendPaymentConfirmationSMS = action({
         name: v.string(),
         amount: v.number(),
         token: v.string(),
+        date: v.string(),
+        time: v.string(),
+        clinic: v.string(),
     },
     handler: async (ctx, args) => {
         const username = process.env.AT_USERNAME;
@@ -48,6 +51,8 @@ export const sendPaymentConfirmationSMS = action({
         const from = process.env.AT_FROM;
         const message = `Hello ${args.name},
 We have received your payment of KES ${args.amount} for Afiya Connect.
+Booking: ${args.date} at ${args.time}
+Clinic: ${args.clinic}
 Your referral token is ${args.token}.
 Thank you.`;
 

@@ -29,13 +29,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center gap-2">
-              {/* Logo Icon */}
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">
-                U
-              </div>
-              <span className="font-bold text-2xl tracking-tight text-gray-900">
-                Uzima<span className="text-primary">Care</span>
-              </span>
+              <Image
+                src="/logo/logo.png"
+                alt="UzimaCare Logo"
+                width={200}
+                height={80}
+                className="h-16 w-auto brightness-0"
+                priority
+              />
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">Features</a>
@@ -170,59 +171,61 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Pilot */}
+            {/* Demo */}
             <div className="rounded-3xl p-8 bg-gray-50 border border-gray-200 hover:border-blue-200 hover:shadow-xl transition-all duration-300">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Pilot</h3>
-              <p className="text-gray-600 mb-6">Free Pilot</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Demo</h3>
+              <p className="text-gray-600 mb-6">Free Access</p>
               <div className="mb-8">
-                <span className="text-4xl font-bold text-gray-900">KSh 0</span>
-                <span className="text-gray-500 ml-2">forever</span>
+                <span className="text-4xl font-bold text-gray-900">$0</span>
+                <span className="text-gray-500 ml-2">/month</span>
               </div>
-              <p className="text-gray-600 mb-6 text-sm">for small facilities</p>
               <ul className="space-y-3 mb-8 text-sm text-gray-600">
-                <li>1 facility</li>
-                <li>Up to 5 users</li>
-                <li>50 referrals/month</li>
+                <li>Max 20 referrals/month</li>
+                <li>Access to 5 hospitals</li>
+                <li>Up to 5 physicians</li>
                 <li>Basic referral & tracking</li>
                 <li>STK payment prompt</li>
               </ul>
-              <Button className="w-full bg-primary hover:bg-blue-600 text-white">Start Free Pilot</Button>
+              <Button className="w-full bg-primary hover:bg-blue-600 text-white">Start Free Demo</Button>
             </div>
 
-            {/* Professional */}
+            {/* Tier 1 */}
             <div className="rounded-3xl p-8 bg-primary border border-primary hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-blue-200 mb-6">For growing facilities</p>
+              <h3 className="text-2xl font-bold text-white mb-2">Tier 1</h3>
+              <p className="text-blue-200 mb-6">For growing clinics</p>
               <div className="mb-8">
-                <span className="text-4xl font-bold text-white">KSh 4,999</span>
-                <span className="text-blue-200 ml-2">per month</span>
+                <span className="text-4xl font-bold text-white">$50</span>
+                <span className="text-blue-200 ml-2">/month</span>
               </div>
               <ul className="space-y-3 mb-8 text-sm text-blue-100">
-                <li>Up to 5 facilities</li>
-                <li>Up to 20 users</li>
-                <li>500 referrals/month</li>
-                <li>Priority support (email + WhatsApp)</li>
-                <li>Appointment booking & SMS alerts</li>
-                <li>Basic analytics dashboard</li>
+                <li>45 referrals/month</li>
+                <li>10 hospitals in network</li>
+                <li>Access by 10 physicians</li>
+                <li>Priority support</li>
+                <li>Appointment booking & SMS</li>
+                <li>Analytics dashboard</li>
               </ul>
-              <Button className="w-full bg-white text-primary hover:bg-gray-100">Choose Professional</Button>
+              <Button className="w-full bg-white text-primary hover:bg-gray-100">Choose Tier 1</Button>
             </div>
 
-            {/* Enterprise */}
+            {/* Tier 2 */}
             <div className="rounded-3xl p-8 bg-gray-50 border border-gray-200 hover:border-blue-200 hover:shadow-xl transition-all duration-300">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
-              <p className="text-gray-600 mb-6">Custom</p>
-              <p className="text-gray-600 mb-8 text-sm">for counties & large networks</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Tier 2</h3>
+              <p className="text-gray-600 mb-6">Unlimited Scale</p>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-gray-900">$150</span>
+                <span className="text-gray-500 ml-2">/month</span>
+              </div>
               <ul className="space-y-3 mb-8 text-sm text-gray-600">
-                <li>Unlimited facilities & users</li>
                 <li>Unlimited referrals</li>
-                <li>Custom integrations (KHIS, eCHIS)</li>
+                <li>Unlimited facilities</li>
+                <li>Unlimited physicians</li>
+                <li>Custom integrations</li>
                 <li>Dedicated account manager</li>
                 <li>Advanced analytics & audit logs</li>
-                <li>API access for partners</li>
               </ul>
-              <Button variant="outline" className="w-full border-2 border-primary text-primary hover:bg-blue-50">Contact Sales</Button>
+              <Button variant="outline" className="w-full border-2 border-primary text-primary hover:bg-blue-50">Select Tier 2</Button>
             </div>
           </div>
         </div>
@@ -275,8 +278,13 @@ export default function LandingPage() {
       <footer className="bg-white border-t border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xs">U</div>
-            <span className="font-bold text-lg text-gray-900">UzimaCare</span>
+            <Image
+              src="/logo/logo.png"
+              alt="UzimaCare Logo"
+              width={140}
+              height={35}
+              className="h-10 w-auto brightness-0"
+            />
           </div>
           <p className="text-gray-500 text-xs">
             © 2024 UzimaCare. Built for Kenya. Powered by secure infrastructure.

@@ -19,21 +19,8 @@ export const metadata: Metadata = {
     "Kenya healthcare application for TB patient management, inter-facility referrals, and mobile payments",
   generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/logo/logo.png",
+    apple: "/logo/logo.png",
   },
 };
 
