@@ -309,7 +309,15 @@ export default function CreateReferralPage({
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" /></svg>
                 <h2 className="font-bold text-primary tracking-wide">Clinical Background</h2>
               </div>
-              <div className="relative">
+              <div className="flex items-center gap-2 relative">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-3 py-1.5 rounded-lg shadow-md active:scale-95 transition-all uppercase tracking-tighter hover:opacity-90 border border-white/20 animate-pulse-subtle"
+                  title="AI Summarize"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
+                  AI Summarize
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -340,7 +348,7 @@ export default function CreateReferralPage({
                   value={formData.medicalHistory}
                   onChange={handleChange}
                   required
-                  placeholder="Include current symptoms, patient condition, and relevant medical history"
+                  placeholder="Input all patient data for AI Summarization."
                   rows={4}
                   className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 transition-all"
                 />
