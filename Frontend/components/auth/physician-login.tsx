@@ -68,7 +68,7 @@ export default function PhysicianLogin({
               alt="UzimaCare Logo"
               width={240}
               height={64}
-              className="h-16 w-auto brightness-0"
+              className="h-16 w-auto"
               priority
             />
           </div>

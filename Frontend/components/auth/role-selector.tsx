@@ -21,7 +21,7 @@ export default function RoleSelector({ onSelectRole }: RoleSelectorProps) {
               alt="UzimaCare Logo"
               width={280}
               height={100}
-              className="h-20 w-auto brightness-0"
+              className="h-20 w-auto"
               priority
             />
           </div>

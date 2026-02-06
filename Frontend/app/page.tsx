@@ -34,7 +34,7 @@ export default function LandingPage() {
                 alt="UzimaCare Logo"
                 width={200}
                 height={80}
-                className="h-16 w-auto brightness-0"
+                className="h-16 w-auto"
                 priority
               />
             </div>
@@ -283,7 +283,7 @@ export default function LandingPage() {
               alt="UzimaCare Logo"
               width={140}
               height={35}
-              className="h-10 w-auto brightness-0"
+              className="h-10 w-auto"
             />
           </div>
           <p className="text-gray-500 text-xs">

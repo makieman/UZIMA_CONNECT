@@ -31,7 +31,7 @@ export default function AdminLayout({
                                 alt="UzimaCare Logo"
                                 width={200}
                                 height={60}
-                                className="h-14 w-auto brightness-0"
+                                className="h-14 w-auto"
                             />
                             <span className="text-sm font-normal opacity-90 border-l border-white/30 pl-2 ml-2">Administration Portal</span>
                         </h1>

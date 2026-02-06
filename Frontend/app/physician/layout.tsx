@@ -30,7 +30,7 @@ export default function PhysicianLayout({
                                 alt="UzimaCare Logo"
                                 width={200}
                                 height={60}
-                                className="h-14 w-auto brightness-0"
+                                className="h-14 w-auto"
                             />
                         </h1>
                         <span className="h-6 w-px bg-white/20"></span>
