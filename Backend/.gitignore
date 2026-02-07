@@ -34,6 +34,7 @@ dist-ssr
 # Environment folder
 environment/
 env/
+google-cloud-credentials.json
 
 # Ignored for the template, you probably want to remove it:
 package-lock.json

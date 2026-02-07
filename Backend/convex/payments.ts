@@ -1,8 +1,8 @@
-// @ts-nocheck
-import { action, mutation, query } from "./_generated/server";
+import { ActionCtx, action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { logPayment } from "./logging";
 
 // Simulate STK push payment
 export const sendSTKPayment = action({
@@ -42,11 +42,16 @@ export const sendSTKPayment = action({
         await ctx.runMutation(api.bookings.incrementBookingStkCount, {
           bookingId: args.bookingId,
         });
-      } else if (args.referralId) {
-        await ctx.runMutation(api.referrals.incrementStkCount, {
-          referralId: args.referralId,
-        });
       }
+
+      // Log successful STK push initiation to Google Cloud
+      await logPayment(ctx, "STK_PUSH_INITIATED", {
+        phoneNumber: args.phoneNumber,
+        amount: args.amount,
+        bookingId: args.bookingId,
+        referralId: args.referralId,
+        transactionId
+      });
 
       return {
         success: true,
@@ -205,10 +210,9 @@ export const processSuccessfulPayment = mutation({
             message: `Your payment of KES ${args.amount} for referral ${referral.referralToken || 'N/A'} has been received. M-Pesa receipt: ${args.mpesaReceipt}`,
             isRead: false,
             metadata: {
-              referralId: payment.referralId as string,
-              // @ts-ignore
-              paymentId: payment._id
-            },
+              referralId: (payment.referralId as string),
+              paymentId: (payment._id as string),
+            } as any,
             createdAt: Date.now()
           });
 
@@ -225,9 +229,9 @@ export const processSuccessfulPayment = mutation({
                   message: `Payment of KES ${args.amount} received for referral ${referral.referralToken || 'N/A'} from patient ${referral.patientName}`,
                   isRead: false,
                   metadata: {
-                    referralId: payment.referralId,
-                    paymentId: payment._id
-                  },
+                    referralId: (payment.referralId as string),
+                    paymentId: (payment._id as string),
+                  } as any,
                   createdAt: Date.now()
                 });
               }
@@ -254,9 +258,9 @@ export const processSuccessfulPayment = mutation({
             message: `Your payment of KES ${args.amount} for booking on ${booking.bookingDate} has been received. M-Pesa receipt: ${args.mpesaReceipt}`,
             isRead: false,
             metadata: {
-              bookingId: payment.bookingId,
-              paymentId: payment._id
-            },
+              bookingId: (payment.bookingId as string),
+              paymentId: (payment._id as string),
+            } as any,
             createdAt: Date.now()
           });
         }
@@ -331,10 +335,9 @@ export const processFailedPayment = mutation({
             message: `Your payment of KES ${payment.amount} for referral ${referral.referralToken || 'N/A'} failed. Reason: ${args.resultDesc}. Please try again.`,
             isRead: false,
             metadata: {
-              referralId: payment.referralId as string,
-              // @ts-ignore
-              paymentId: payment._id
-            },
+              referralId: (payment.referralId as string),
+              paymentId: (payment._id as string),
+            } as any,
             createdAt: Date.now()
           });
         }
@@ -350,9 +353,9 @@ export const processFailedPayment = mutation({
             message: `Your payment of KES ${payment.amount} for booking on ${booking.bookingDate} failed. Reason: ${args.resultDesc}. Please try again.`,
             isRead: false,
             metadata: {
-              bookingId: payment.bookingId,
-              paymentId: payment._id
-            },
+              bookingId: (payment.bookingId as string),
+              paymentId: (payment._id as string),
+            } as any,
             createdAt: Date.now()
           });
         }

@@ -1,6 +1,7 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { sendToCloudLog } from "./logging";
 
 // Simple test action to verify M-Pesa environment variables are loaded
 export const testEnvVars = action({
@@ -33,6 +34,23 @@ export const testEnvVars = action({
         console.log("Environment Variables Status:", result);
 
         return result;
+    }
+});
+
+// Test action to verify Google Cloud Logging integration
+export const testCloudLogging = action({
+    args: {
+        message: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        console.log("Testing Google Cloud Logging...");
+
+        await sendToCloudLog(ctx, "CLOUD_LOGGING_TEST", {
+            message: args.message ?? "This is a test log from Convex",
+            timestamp: new Date().toISOString()
+        }, "INFO");
+
+        return { success: true, message: "Test log sent to forwarder" };
     }
 });
 

@@ -5,7 +5,7 @@ import type React from "react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -21,6 +21,8 @@ export default function CreateReferralPage({
   onBack,
 }: CreateReferralProps) {
   const createReferral = useMutation(api.referrals.createReferral);
+  // @ts-ignore
+  const summarizeAI = useAction(api.gemini.summarizeMedicalHistory);
 
   const [formData, setFormData] = useState({
     patientName: "",
@@ -35,9 +37,40 @@ export default function CreateReferralPage({
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importFileName, setImportFileName] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleAISummarize = async (overrideText?: string) => {
+    const textToSummarize = overrideText || formData.medicalHistory;
+
+    if (!textToSummarize) {
+      alert("Please enter some medical history or import a document first.");
+      return;
+    }
+
+    setIsSummarizing(true);
+    try {
+      const result = await summarizeAI({
+        text: textToSummarize,
+      });
+
+      if (result.success && result.parsed) {
+        setFormData((prev) => ({
+          ...prev,
+          medicalHistory: result.parsed.medicalHistory || prev.medicalHistory,
+          labResults: result.parsed.labResults || prev.labResults,
+        }));
+      } else {
+        alert("AI Summarization failed: " + (result.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Error calling AI: " + String(err));
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,8 +79,53 @@ export default function CreateReferralPage({
     setImportFileName(file.name);
 
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
-    const text = await file.text();
 
+    if (ext === "pdf") {
+      setLoading(true);
+      try {
+        // Dynamic import to avoid SSR errors with DOMMatrix
+        const pdfjsLib = await import("pdfjs-dist");
+        // @ts-ignore
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        alert("PDF detected, starting extraction...");
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+
+        console.log(`PDF loaded: ${pdf.numPages} pages`);
+        let extractedText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          try {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            // @ts-ignore
+            const pageText = textContent.items.map((item: any) => (item as any).str).join(" ");
+            extractedText += pageText + "\n";
+            console.log(`Page ${i}: ${pageText.length} chars`);
+          } catch (pageErr) {
+            console.error(`Error parsing page ${i}:`, pageErr);
+          }
+        }
+
+        console.log(`Total Extracted: ${extractedText.length} characters`);
+        if (!extractedText.trim()) {
+          alert("We couldn't find any text in this PDF. If it's a scanned image, please type the summary manually.");
+        } else {
+          setFormData((prev) => ({ ...prev, medicalHistory: extractedText }));
+          // Automatically trigger AI summarization with the immediate text
+          handleAISummarize(extractedText);
+        }
+      } catch (err) {
+        alert("Failed to parse PDF: " + String(err));
+        console.error("PDF Parse Error:", err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const text = await file.text();
     try {
       let parsed = "";
       if (ext === "json") {
@@ -56,14 +134,12 @@ export default function CreateReferralPage({
         else if (j && typeof j.medicalHistory === "string") parsed = j.medicalHistory;
         else parsed = JSON.stringify(j, null, 2);
       } else if (ext === "csv") {
-        // crude csv: take first non-header row, first column
         const rows = text.split(/\r?\n/).filter(Boolean);
         if (rows.length > 0) {
           const cols = rows[0].split(",");
           parsed = cols[0] || rows[0];
         } else parsed = text;
       } else {
-        // txt, md or other text formats
         parsed = text;
       }
 
@@ -312,16 +388,18 @@ export default function CreateReferralPage({
               <div className="flex items-center gap-2 relative">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-3 py-1.5 rounded-lg shadow-md active:scale-95 transition-all uppercase tracking-tighter hover:opacity-90 border border-white/20 animate-pulse-subtle"
+                  onClick={() => handleAISummarize()}
+                  disabled={isSummarizing}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-3 py-1.5 rounded-lg shadow-md active:scale-95 transition-all uppercase tracking-tighter hover:opacity-90 border border-white/20 ${isSummarizing ? "animate-pulse opacity-70" : "animate-pulse-subtle"}`}
                   title="AI Summarize"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
-                  AI Summarize
+                  {isSummarizing ? "Summarizing..." : "AI Summarize"}
                 </button>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt,.md,.json,.csv"
+                  accept=".txt,.md,.json,.csv,.pdf"
                   className="hidden"
                   onChange={handleFileImport}
                 />

@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20260214T050000Z
+DTEND:20260214T123000Z
+DTSTAMP:20260128T052048Z
+ORGANIZER;CN="Chepparing":MAILTO:calendar-invite@lu.ma
+UID:evt-D6ZwXkuz5HE9po7@events.lu.ma
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=markm
+ aranga9@gmail.com;X-NUM-GUESTS=0:mailto:markmaranga9@gmail.com
+SUMMARY:Build Bout Valentine Hackathon
+DESCRIPTION:Get up-to-date information at: https://luma.com/event/evt-D6Zw
+ Xkuz5HE9po7?pk=g-lUAxHKVPM118SgF\n\nAddress:\nuniversity of eldoret\nEldor
+ et, Uasin Gishu County\nKenya\n\nValentines Hacktober is an in-person hack
+ athon held in February 2026, aligned to champion innovation. We welcome am
+ ateurs, freelancers, developers, educators, and students to build fintech 
+ applications using Vercel tools. Come solo or form a team and build innova
+ tive financial-technology solutions powered by PayHero.\nThe event is free
+  to join just bring your laptop, have an idea, and zeal to learn and promp
+ t. Vercel v0 will provide free credits so you can hack without worrying ab
+ out dev costs. Sign up to receive v0 credits before February 12 2026\nPump
+ kin Bounty: Ksh 50,000 cash + v0 credits…\n\nHosted by Chepparing
+LOCATION:university of eldoret, Eldoret, Kenya
+GEO:0.5142774999999999;35.2697802
+SEQUENCE:191740848
+STATUS:CONFIRMED
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

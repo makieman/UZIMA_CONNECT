@@ -5,7 +5,9 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env.local') });
+require('dotenv').config(); // Fallback to standard .env
 
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
@@ -19,14 +21,15 @@ const clinicRoutes = require('./routes/clinics');
 const bookingRoutes = require('./routes/bookings');
 const paymentRoutes = require('./routes/payments');
 const notificationRoutes = require('./routes/notifications');
+const logRoutes = require('./routes/logs');
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://yourdomain.com']
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }));
@@ -68,6 +71,7 @@ app.use('/api/clinics', clinicRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/logs', logRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
