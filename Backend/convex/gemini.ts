@@ -5,7 +5,13 @@ import { v } from "convex/values";
 import { GoogleGenAI } from "@google/genai";
 
 /**
+ * Helper function to delay execution
+ */
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
  * Summarize medical history from a text string using Google Gemini 3 Flash
+ * Includes automatic retry logic for transient 503 errors
  */
 export const summarizeMedicalHistory = action({
     args: {
@@ -27,8 +33,7 @@ export const summarizeMedicalHistory = action({
             return { success: false, error: "No content provided to summarize." };
         }
 
-        try {
-            const prompt = `You are a medical assistant specializing in patient clinical documentation. 
+        const prompt = `You are a medical assistant specializing in patient clinical documentation. 
 Your task is to take raw patient medical history data and transform it into a structured summary.
 
 Format the output into two clear sections:
@@ -48,30 +53,60 @@ LAB_RESULTS:
 Raw Medical Data:
 ${args.text}`;
 
-            const response = await genAI.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: prompt,
-            });
+        // Retry configuration
+        const maxRetries = 3;
+        let lastError: Error | null = null;
 
-            const summary = response.text || "";
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`Gemini API attempt ${attempt}/${maxRetries}`);
 
-            const medicalHistoryMatch = summary.match(/MEDICAL_HISTORY:\s*([\s\S]*?)(?=LAB_RESULTS:|$)/i);
-            const labResultsMatch = summary.match(/LAB_RESULTS:\s*([\s\S]*?)(?=\n---|$)/i);
+                const response = await genAI.models.generateContent({
+                    model: "gemini-3-flash-preview",
+                    contents: prompt,
+                });
 
-            return {
-                success: true,
-                summary: summary,
-                parsed: {
-                    medicalHistory: medicalHistoryMatch ? medicalHistoryMatch[1].trim() : "",
-                    labResults: labResultsMatch ? labResultsMatch[1].trim() : "",
+                const summary = response.text || "";
+
+                const medicalHistoryMatch = summary.match(/MEDICAL_HISTORY:\s*([\s\S]*?)(?=LAB_RESULTS:|$)/i);
+                const labResultsMatch = summary.match(/LAB_RESULTS:\s*([\s\S]*?)(?=\n---|$)/i);
+
+                return {
+                    success: true,
+                    summary: summary,
+                    parsed: {
+                        medicalHistory: medicalHistoryMatch ? medicalHistoryMatch[1].trim() : "",
+                        labResults: labResultsMatch ? labResultsMatch[1].trim() : "",
+                    }
+                };
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                console.error(`Gemini Error (attempt ${attempt}):`, lastError.message);
+
+                // Check if it's a retryable error (503, 429, etc)
+                const errorMsg = lastError.message.toLowerCase();
+                const isRetryable = errorMsg.includes("503") ||
+                    errorMsg.includes("overloaded") ||
+                    errorMsg.includes("unavailable") ||
+                    errorMsg.includes("429") ||
+                    errorMsg.includes("rate limit");
+
+                if (isRetryable && attempt < maxRetries) {
+                    // Exponential backoff: 2s, 4s, 8s
+                    const waitTime = Math.pow(2, attempt) * 1000;
+                    console.log(`Retrying in ${waitTime / 1000}s...`);
+                    await delay(waitTime);
+                    continue;
                 }
-            };
-        } catch (error) {
-            console.error("Gemini Error:", error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : "An unknown error occurred during Gemini summarization."
-            };
+
+                // Non-retryable or max retries reached
+                break;
+            }
         }
+
+        return {
+            success: false,
+            error: lastError?.message || "An unknown error occurred during Gemini summarization after multiple retries."
+        };
     },
 });

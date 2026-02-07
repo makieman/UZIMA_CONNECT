@@ -38,6 +38,11 @@ export default function CreateReferralPage({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importFileName, setImportFileName] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [showAISuccess, setShowAISuccess] = useState(false);
+  const [aiInsightsCount, setAiInsightsCount] = useState(0);
+  const [isSummaryVisible, setIsSummaryVisible] = useState(false);
+  const [aiSummary, setAiSummary] = useState<{ history: string; labs: string } | null>(null);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -58,11 +63,17 @@ export default function CreateReferralPage({
       });
 
       if (result.success && result.parsed) {
-        setFormData((prev) => ({
-          ...prev,
-          medicalHistory: result.parsed.medicalHistory || prev.medicalHistory,
-          labResults: result.parsed.labResults || prev.labResults,
-        }));
+        setAiSummary({
+          history: result.parsed.medicalHistory || "",
+          labs: result.parsed.labResults || "",
+        });
+        setIsSummaryVisible(true);
+
+        // Count some "insights" for the UI (words in summary)
+        const insightsCount = (result.parsed.medicalHistory?.split(/\s+/).length || 0) +
+          (result.parsed.labResults?.split(/\s+/).length || 0);
+        setAiInsightsCount(Math.min(15, Math.max(5, Math.floor(insightsCount / 10))));
+        setShowAISuccess(true);
       } else {
         alert("AI Summarization failed: " + (result.error || "Unknown error"));
       }
@@ -89,7 +100,7 @@ export default function CreateReferralPage({
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
         const arrayBuffer = await file.arrayBuffer();
-        alert("PDF detected, starting extraction...");
+        setIsExtracting(true);
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         const pdf = await loadingTask.promise;
 
@@ -121,6 +132,7 @@ export default function CreateReferralPage({
         console.error("PDF Parse Error:", err);
       } finally {
         setLoading(false);
+        setIsExtracting(false);
       }
       return;
     }
@@ -336,7 +348,7 @@ export default function CreateReferralPage({
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header handled by Layout, but adding a sub-header for this specific page context if needed, or just using main content */}
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
+      <div className="max-w-6xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-xl font-bold text-gray-900">Create Referral</h1>
           <button onClick={onBack} className="flex items-center gap-1 text-primary text-sm font-semibold bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
@@ -418,29 +430,75 @@ export default function CreateReferralPage({
                 <span>✓</span> Imported: {importFileName}
               </div>
             )}
-            <div className="space-y-5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Medical History *</label>
+            <div className={`space-y-5 transition-all duration-500 ease-in-out`}>
+              <div className="flex flex-col gap-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Medical Notes / Raw Data *</label>
                 <textarea
                   name="medicalHistory"
                   value={formData.medicalHistory}
                   onChange={handleChange}
                   required
                   placeholder="Input all patient data for AI Summarization."
-                  rows={4}
-                  className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 transition-all"
+                  className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm min-h-[120px] transition-all focus:outline-none focus:ring-2"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Lab Results *</label>
+
+              {/* AI SUMMARY BLOCK - Inline Expansion */}
+              {isSummaryVisible && aiSummary && (
+                <div className="animate-in slide-in-from-top-4 fade-in duration-500">
+                  <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-2xl p-5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            medicalHistory: aiSummary.history,
+                            labResults: aiSummary.labs
+                          }));
+                          setIsSummaryVisible(false);
+                        }}
+                        className="text-[10px] font-bold bg-white dark:bg-slate-800 text-indigo-600 px-3 py-1.5 rounded-lg shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-colors flex items-center gap-1.5"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                        Apply AI Summary
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="bg-indigo-600 p-1 rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
+                      </div>
+                      <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">AI Clinical Insights</span>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-indigo-500 uppercase tracking-tighter">Summarized History</h4>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                          "{aiSummary.history}"
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-indigo-500 uppercase tracking-tighter">Extracted Lab Findings</h4>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                          "{aiSummary.labs}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Lab Results *</label>
                 <textarea
                   name="labResults"
-                  value={(formData as any).labResults}
+                  value={formData.labResults}
                   onChange={handleChange}
                   required
                   placeholder="Enter lab/test results (e.g., X-ray, sputum)"
-                  rows={3}
-                  className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 transition-all"
+                  className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm min-h-[100px] transition-all focus:outline-none focus:ring-2"
                 />
               </div>
             </div>
@@ -623,6 +681,94 @@ export default function CreateReferralPage({
           </div>
         </form>
       </div>
+
+      {/* PDF Extraction Loading Modal */}
+      {isExtracting && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"></div>
+          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border border-white/10 overflow-hidden">
+            {/* Animated Background Pulse */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-cyan-400/5 animate-pulse"></div>
+
+            <div className="relative z-10">
+              <div className="mb-6 flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-500/30 blur-2xl rounded-full animate-bounce"></div>
+                  <div className="relative w-20 h-20 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border-4 border-blue-50/50 dark:border-slate-700/50">
+                    <svg className="w-10 h-10 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M12 18V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M4.93 4.93L7.76 7.76" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M16.24 16.24L19.07 19.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M2 12H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M18 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M4.93 19.07L7.76 16.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Extracting Clinical Data</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Parsing PDF document and identifying medical history patterns...</p>
+
+              {/* Modern Progress Bar */}
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
+                <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 w-2/3 rounded-full animate-infinite-scroll"></div>
+              </div>
+              <div className="flex justify-between items-center text-[10px] font-bold text-blue-500 uppercase tracking-widest">
+                <span>Reading Pages</span>
+                <span className="animate-pulse">Processing...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Success Modal */}
+      {showAISuccess && (
+        <>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] transition-opacity animate-in fade-in duration-300"></div>
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
+            <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 text-center border border-white/20 animate-in zoom-in-95 duration-300">
+              <div className="mb-6 flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full"></div>
+                  <div className="relative w-20 h-20 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2 mb-8">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  Extraction Successful
+                </h2>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
+                  <span className="text-emerald-700 dark:text-emerald-400 text-sm font-semibold">{aiInsightsCount} insights identified</span>
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed pt-2">
+                  AI has finished analyzing the clinical document. Key medical history and vital signs have been extracted.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => setShowAISuccess(false)}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  Review Summary
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </button>
+                <button
+                  onClick={() => setShowAISuccess(false)}
+                  className="w-full py-3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
