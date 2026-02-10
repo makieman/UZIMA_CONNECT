@@ -1,4 +1,5 @@
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import { QueryCtx, MutationCtx, internalQuery } from "./_generated/server";
+import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
 
@@ -93,3 +94,14 @@ export async function checkPatientAccess(ctx: QueryCtx | MutationCtx, userId: Id
 
     return user;
 }
+
+/**
+ * Internal query to validate role, usable from actions.
+ */
+export const validateRole = internalQuery({
+    args: { roles: v.array(v.string()), demoUserId: v.optional(v.string()) },
+    handler: async (ctx, args) => {
+        await requireRole(ctx, args.roles as Role[], args.demoUserId);
+        return true;
+    },
+});

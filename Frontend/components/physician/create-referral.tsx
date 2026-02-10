@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState, useRef } from "react";
+import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMutation, useAction } from "convex/react";
@@ -23,6 +24,8 @@ export default function CreateReferralPage({
   const createReferral = useMutation(api.referrals.createReferral);
   // @ts-ignore
   const summarizeAI = useAction(api.gemini.summarizeMedicalHistory);
+  // @ts-ignore
+  const ocrAI = useAction(api.vision.ocrMedicalImage);
 
   const [formData, setFormData] = useState({
     patientName: "",
@@ -36,6 +39,9 @@ export default function CreateReferralPage({
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scanInputRef = useRef<HTMLInputElement | null>(null);
+  const webcamRef = useRef<Webcam>(null);
+
   const [importFileName, setImportFileName] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -43,6 +49,8 @@ export default function CreateReferralPage({
   const [aiInsightsCount, setAiInsightsCount] = useState(0);
   const [isSummaryVisible, setIsSummaryVisible] = useState(false);
   const [aiSummary, setAiSummary] = useState<{ history: string; labs: string } | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -158,6 +166,60 @@ export default function CreateReferralPage({
       setFormData((prev) => ({ ...prev, medicalHistory: parsed }));
     } catch (err) {
       alert("Failed to import file: " + String(err));
+    }
+  };
+
+  const handleScanRecord = async (eOrBase64: React.ChangeEvent<HTMLInputElement> | string) => {
+    let base64 = "";
+    let fileName = "Scanned Image";
+
+    if (typeof eOrBase64 === "string") {
+      base64 = eOrBase64;
+    } else {
+      const file = eOrBase64.target.files?.[0];
+      if (!file) return;
+      fileName = file.name;
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+      base64 = await base64Promise;
+    }
+
+    setImportFileName(`Scan: ${fileName}`);
+    setIsExtracting(true);
+    setIsCameraOpen(false);
+
+    try {
+      console.log("Starting OCR scan...");
+      const result = await ocrAI({
+        imageBase64: base64,
+        demoUserId: physician.userId,
+      });
+
+      if (result.success && result.text) {
+        console.log("OCR successful, text length:", result.text.length);
+        setFormData((prev) => ({ ...prev, medicalHistory: result.text }));
+
+        // 3. Automatically trigger AI summarization with extracted text
+        await handleAISummarize(result.text);
+      } else {
+        alert("OCR failed: " + (result.error || result.message || "No text detected."));
+      }
+    } catch (err) {
+      console.error("OCR Error:", err);
+      alert("Error scanning record: " + String(err));
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleCapture = () => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      handleScanRecord(imageSrc);
     }
   };
 
@@ -409,6 +471,22 @@ export default function CreateReferralPage({
                   {isSummarizing ? "Summarizing..." : "AI Summarize"}
                 </button>
                 <input
+                  ref={scanInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleScanRecord}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all uppercase tracking-tighter hover:bg-slate-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+                  Scan Document
+                </button>
+                <input
                   ref={fileInputRef}
                   type="file"
                   accept=".txt,.md,.json,.csv,.pdf"
@@ -425,6 +503,68 @@ export default function CreateReferralPage({
                 </button>
               </div>
             </div>
+
+            {/* Camera Modal */}
+            {isCameraOpen && (
+              <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl w-full max-w-lg relative flex flex-col items-center">
+                  <div className="absolute top-4 right-4 z-10">
+                    <button
+                      onClick={() => setIsCameraOpen(false)}
+                      className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                    </button>
+                  </div>
+
+                  <div className="w-full relative aspect-video bg-black flex items-center justify-center">
+                    {!isCameraReady && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                        <div className="text-white text-center">
+                          <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full mx-auto mb-2"></div>
+                          <p className="text-sm">Loading camera...</p>
+                        </div>
+                      </div>
+                    )}
+                    <Webcam
+                      audio={false}
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      className="w-full h-full object-cover"
+                      videoConstraints={{ facingMode: "environment" }}
+                      onUserMedia={() => setIsCameraReady(true)}
+                      onUserMediaError={() => {
+                        alert("Camera access denied or not available.");
+                        setIsCameraOpen(false);
+                      }}
+                    />
+                  </div>
+
+                  <div className="p-6 w-full flex flex-col items-center gap-4 bg-white dark:bg-slate-900">
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">Scan Medical Document</h3>
+                    <div className="flex w-full gap-3">
+                      <button
+                        onClick={handleCapture}
+                        disabled={!isCameraReady}
+                        className={`flex-1 ${isCameraReady ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'} text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2`}
+                      >
+                        <div className="w-4 h-4 rounded-full border-2 border-white"></div>
+                        {isCameraReady ? 'Capture Photo' : 'Loading...'}
+                      </button>
+                      <button
+                        onClick={() => scanInputRef.current?.click()}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl border border-slate-200 active:scale-95 transition-transform"
+                      >
+                        Upload Image
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 text-center">
+                      Align document within the frame. Ensure good lighting for best OCR results.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             {importFileName && (
               <div className="text-xs text-green-600 mb-2 font-medium flex items-center gap-1">
                 <span>✓</span> Imported: {importFileName}
