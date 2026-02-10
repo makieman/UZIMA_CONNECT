@@ -64,13 +64,16 @@ export const ocrMedicalImage = action({
             });
 
             let imageSource: any = {};
-            if (args.imageBase64) {
+            if (args.imageBase64 && args.imageBase64.trim()) {
+                console.log(`Received imageBase64, length: ${args.imageBase64.length}`);
                 const base64 = args.imageBase64.replace(/^data:image\/\w+;base64,/, "");
                 imageSource = { content: base64 };
-            } else if (args.imageUrl) {
+            } else if (args.imageUrl && args.imageUrl.trim()) {
+                console.log(`Received imageUrl: ${args.imageUrl}`);
                 imageSource = { source: { imageUri: args.imageUrl } };
             } else {
-                return { success: false, error: "No image source provided." };
+                console.error("OCR Error: No image source provided in arguments.");
+                throw new Error("No image present");
             }
 
             console.log("Calling Google Cloud Vision Document Text Detection...");

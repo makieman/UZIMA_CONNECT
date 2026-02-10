@@ -112,6 +112,13 @@ export default function CreateReferralPage({
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         const pdf = await loadingTask.promise;
 
+        if (pdf.numPages === 0) {
+          alert("The uploaded PDF has no pages.");
+          setLoading(false);
+          setIsExtracting(false);
+          return;
+        }
+
         console.log(`PDF loaded: ${pdf.numPages} pages`);
         let extractedText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -193,7 +200,14 @@ export default function CreateReferralPage({
     setIsCameraOpen(false);
 
     try {
-      console.log("Starting OCR scan...");
+      if (!base64 || base64.trim().length < 100) {
+        console.error("OCR Error: Invalid or empty image data.");
+        alert("Image not ready yet. Please try scanning again.");
+        setIsExtracting(false);
+        return;
+      }
+
+      console.log("Starting OCR scan, data length:", base64.length);
       const result = await ocrAI({
         imageBase64: base64,
         demoUserId: physician.userId,
@@ -411,16 +425,16 @@ export default function CreateReferralPage({
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header handled by Layout, but adding a sub-header for this specific page context if needed, or just using main content */}
       <div className="max-w-6xl mx-auto p-4 space-y-6">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-xl font-bold text-gray-900">Create Referral</h1>
-          <button onClick={onBack} className="flex items-center gap-1 text-primary text-sm font-semibold bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Create Referral</h1>
+          <button onClick={onBack} className="flex items-center gap-1 text-primary text-sm font-semibold bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors self-end sm:self-auto">
             <span>←</span> Dashboard
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section 1: Patient Information */}
-          <section className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+          <section className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
               <h2 className="font-bold text-primary tracking-wide">Patient Information</h2>
@@ -459,16 +473,31 @@ export default function CreateReferralPage({
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" /></svg>
                 <h2 className="font-bold text-primary tracking-wide">Clinical Background</h2>
               </div>
-              <div className="flex items-center gap-2 relative">
+              <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 relative overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
                 <button
                   type="button"
                   onClick={() => handleAISummarize()}
                   disabled={isSummarizing}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-3 py-1.5 rounded-lg shadow-md active:scale-95 transition-all uppercase tracking-tighter hover:opacity-90 border border-white/20 ${isSummarizing ? "animate-pulse opacity-70" : "animate-pulse-subtle"}`}
+                  className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-1.5 sm:px-3 py-1.5 rounded-lg shadow-md active:scale-95 transition-all uppercase tracking-tighter hover:opacity-90 border border-white/20 flex-shrink-0 ${isSummarizing ? "animate-pulse opacity-70" : "animate-pulse-subtle"}`}
                   title="AI Summarize"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
-                  {isSummarizing ? "Summarizing..." : "AI Summarize"}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
+                  <span className="whitespace-nowrap">{isSummarizing ? "Summ..." : "AI Summarize"}</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt,.md,.json,.csv,.pdf"
+                  className="hidden"
+                  onChange={handleFileImport}
+                />
+                <button
+                  type="button"
+                  onClick={handleImportClick}
+                  className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-white bg-primary px-1.5 sm:px-2.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform uppercase tracking-tighter hover:bg-primary/90 flex-shrink-0"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                  <span className="whitespace-nowrap">Import</span>
                 </button>
                 <input
                   ref={scanInputRef}
@@ -481,25 +510,10 @@ export default function CreateReferralPage({
                 <button
                   type="button"
                   onClick={() => setIsCameraOpen(true)}
-                  className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all uppercase tracking-tighter hover:bg-slate-200"
+                  className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 sm:px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all uppercase tracking-tighter hover:bg-slate-200 flex-shrink-0 ml-auto"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
-                  Scan Document
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.md,.json,.csv,.pdf"
-                  className="hidden"
-                  onChange={handleFileImport}
-                />
-                <button
-                  type="button"
-                  onClick={handleImportClick}
-                  className="flex items-center gap-1 text-[10px] font-bold text-white bg-primary px-2.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform uppercase tracking-tighter hover:bg-primary/90"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                  Import
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+                  <span className="whitespace-nowrap">Scan</span>
                 </button>
               </div>
             </div>
@@ -645,7 +659,7 @@ export default function CreateReferralPage({
           </section>
 
           {/* Section 3: Referral Configuration */}
-          <section className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+          <section className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
               <h2 className="font-bold text-primary tracking-wide">Referral Configuration</h2>
@@ -665,29 +679,29 @@ export default function CreateReferralPage({
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                   </div>
-                </div>
 
-                {/* Dropdown for search results */}
-                {searchTerm.trim().length > 0 && (
-                  <div className="mt-2 bg-white border border-gray-100 rounded-xl shadow-lg max-h-48 overflow-y-auto z-10 relative">
-                    <ul className="divide-y divide-gray-50">
-                      {diseases
-                        .filter((d) =>
-                          d.toLowerCase().includes(searchTerm.toLowerCase()),
-                        )
-                        .map((d) => (
-                          <li
-                            key={d}
-                            onClick={() => toggleDiagnosis(d)}
-                            className={`p-3 cursor-pointer text-sm hover:bg-blue-50 transition-colors ${Array.isArray((formData as any).diagnosis) && (formData as any).diagnosis.includes(d.toUpperCase()) ? "bg-blue-50 font-semibold text-primary" : "text-gray-700"
-                              }`}
-                          >
-                            {d.toUpperCase()}
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                )}
+                  {/* Dropdown for search results */}
+                  {searchTerm.trim().length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
+                      <ul className="divide-y divide-gray-50">
+                        {diseases
+                          .filter((d) =>
+                            d.toLowerCase().includes(searchTerm.toLowerCase()),
+                          )
+                          .map((d) => (
+                            <li
+                              key={d}
+                              onClick={() => toggleDiagnosis(d)}
+                              className={`p-3 cursor-pointer text-sm hover:bg-blue-50 transition-colors ${Array.isArray((formData as any).diagnosis) && (formData as any).diagnosis.includes(d.toUpperCase()) ? "bg-blue-50 font-semibold text-primary" : "text-gray-700"
+                                }`}
+                            >
+                              {d.toUpperCase()}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
 
                 {/* Selected diagnoses pills */}
                 <div className="mt-3">
