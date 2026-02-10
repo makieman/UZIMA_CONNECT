@@ -47,6 +47,7 @@ import type * as stkTest from "../stkTest.js";
 import type * as testMpesa from "../testMpesa.js";
 import type * as testMpesaAuth from "../testMpesaAuth.js";
 import type * as users from "../users.js";
+import type * as vision from "../vision.js";
 
 import type {
   ApiFromModules,
@@ -94,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   testMpesa: typeof testMpesa;
   testMpesaAuth: typeof testMpesaAuth;
   users: typeof users;
+  vision: typeof vision;
 }>;
 
 /**
