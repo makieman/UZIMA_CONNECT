@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getAuthState } from "@/lib/storage";
 
 export default function LandingPage() {
@@ -22,12 +23,16 @@ export default function LandingPage() {
 
   // Logic Simulator for Diagram
   const [currentStep, setCurrentStep] = useState(1);
+  const [isDiagramPaused, setIsDiagramPaused] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
+    if (isDiagramPaused) return;
     const timer = setInterval(() => {
       setCurrentStep((prev) => (prev % 4) + 1);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isDiagramPaused]);
 
   return (
     <div className="bg-background-light text-text-main font-sans antialiased overflow-x-hidden min-h-screen">
@@ -36,32 +41,70 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center gap-2">
-                <div className="relative w-8 h-8">
-                  <svg className="w-full h-full" fill="none" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 5C11.7157 5 5 11.7157 5 20C5 28.2843 11.7157 35 20 35V20H35C35 11.7157 28.2843 5 20 5Z" fill="#22C55E"></path>
-                    <path d="M20 35C28.2843 35 35 28.2843 35 20H20V35Z" fill="#EF4444"></path>
-                    <circle cx="20" cy="20" fill="white" r="4"></circle>
-                  </svg>
-                </div>
+              <Link href="/" className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <Image
+                  src="/logo/logo.png"
+                  alt="UzimaCare Logo"
+                  width={40}
+                  height={40}
+                  className="h-10 w-auto"
+                  priority
+                />
                 <span className="font-bold text-xl tracking-tight text-slate-900">Uzima<span className="text-primary">Care</span></span>
-              </div>
+              </Link>
             </div>
             <div className="hidden md:flex space-x-8">
-              <a className="text-slate-600 hover:text-primary transition-colors px-3 py-2 text-sm font-medium" href="#">Features</a>
-              <a className="text-slate-600 hover:text-primary transition-colors px-3 py-2 text-sm font-medium" href="#">How it Works</a>
-              <a className="text-slate-600 hover:text-primary transition-colors px-3 py-2 text-sm font-medium" href="#">Partners</a>
+              <a className="text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-all px-3 py-2 text-sm font-medium" href="#features">Features</a>
+              <a className="text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-all px-3 py-2 text-sm font-medium" href="#network">How it Works</a>
+              <a className="text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-all px-3 py-2 text-sm font-medium" href="#partners">Partners</a>
             </div>
             <div className="flex items-center">
               <Link href="/login">
-                <button className="bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg shadow-blue-500/10 transition-all cursor-pointer">
+                <button className="hidden md:block bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg shadow-blue-500/10 transition-all cursor-pointer">
                   Login Portal
                 </button>
               </Link>
-              <button className="ml-3 md:hidden p-2 rounded-md text-slate-400 hover:text-slate-600">
-                <span className="material-symbols-outlined">menu</span>
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="ml-3 md:hidden p-2 rounded-md text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+              >
+                <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
               </button>
             </div>
+          </div>
+        </div>
+        
+        {/* Mobile Menu Dropdown */}
+        <div className={`md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-lg transition-all duration-300 ${mobileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+          <div className="px-4 py-4 space-y-3">
+            <a 
+              href="#features" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium"
+            >
+              Features
+            </a>
+            <a 
+              href="#network" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium"
+            >
+              How it Works
+            </a>
+            <a 
+              href="#partners" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium"
+            >
+              Partners
+            </a>
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+              <button className="w-full mt-2 bg-primary hover:bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/10 transition-all">
+                Login Portal
+              </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -178,7 +221,7 @@ export default function LandingPage() {
       </main>
 
       {/* Why UzimaCare Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background-subtle border-y border-slate-100">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-background-subtle border-y border-slate-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-primary font-bold text-sm tracking-widest uppercase mb-4">WHY UZIMACARE?</h2>
@@ -188,7 +231,7 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
             {/* Feature 1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group">
+            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group focus-within:ring-2 focus-within:ring-primary/20" tabIndex={0}>
               <div className="w-full h-40 mb-6 bg-slate-50 rounded-xl flex items-center justify-center relative overflow-hidden border border-slate-100">
                 <div className="w-16 h-28 border-4 border-slate-300 bg-white rounded-xl relative z-10 flex flex-col items-center justify-center shadow-sm">
                   <div className="w-6 h-1 bg-slate-200 rounded-full mb-1"></div>
@@ -210,7 +253,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group">
+            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group focus-within:ring-2 focus-within:ring-primary/20" tabIndex={0}>
               <div className="w-full h-40 mb-6 bg-green-50/40 rounded-xl flex items-center justify-center relative border border-green-50">
                 <div className="absolute w-24 h-24 bg-green-100/50 rounded-full animate-pulse-slow"></div>
                 <div className="absolute w-20 h-20 bg-green-200/30 rounded-full animate-pulse"></div>
@@ -228,7 +271,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group">
+            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group focus-within:ring-2 focus-within:ring-primary/20" tabIndex={0}>
               <div className="w-full h-40 mb-6 bg-yellow-50/40 rounded-xl flex items-center justify-center relative overflow-hidden border border-yellow-50">
                 <div className="relative w-32 h-32 flex items-center justify-center">
                   <div className="absolute bottom-[-20px]">
@@ -252,7 +295,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 4 */}
-            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group">
+            <div className="bg-white rounded-2xl p-8 shadow-soft-card hover:shadow-soft-hover transition-all duration-300 border border-slate-100 group focus-within:ring-2 focus-within:ring-primary/20" tabIndex={0}>
               <div className="w-full h-40 mb-6 bg-purple-50/40 rounded-xl flex items-center justify-center relative border border-purple-50">
                 <div className="relative w-32 h-32 flex items-end justify-center gap-2 pb-4">
                   <div className="w-4 bg-purple-200 rounded-t h-12"></div>
@@ -278,13 +321,21 @@ export default function LandingPage() {
       </section>
 
       {/* Architecture Section (Uzima Network) */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-50 relative overflow-hidden">
+      <section id="network" className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-50 relative overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col items-center">
           <div className="text-center mb-10">
             <h2 className="text-primary font-bold text-sm tracking-widest uppercase mb-4">THE UZIMA NETWORK</h2>
             <p className="text-3xl sm:text-4xl font-bold text-slate-900 max-w-3xl mx-auto leading-tight">
               Seamless connectivity across the healthcare ecosystem.
             </p>
+            <button
+              onClick={() => setIsDiagramPaused(!isDiagramPaused)}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm font-medium text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+              aria-label={isDiagramPaused ? "Play animation" : "Pause animation"}
+            >
+              <span className="material-symbols-outlined text-lg">{isDiagramPaused ? 'play_arrow' : 'pause'}</span>
+              {isDiagramPaused ? 'Play Animation' : 'Pause Animation'}
+            </button>
           </div>
           <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-8">
             <div className="relative w-full aspect-[16/10] md:aspect-[21/9] bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-100">
@@ -546,7 +597,7 @@ export default function LandingPage() {
       </section>
 
       {/* Partners Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-surface-light border-t border-slate-100 relative">
+      <section id="partners" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface-light border-t border-slate-100 relative">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
@@ -606,21 +657,76 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-white py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="relative w-6 h-6 grayscale opacity-50">
-              <svg className="w-full h-full" fill="none" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 5C11.7157 5 5 11.7157 5 20C5 28.2843 11.7157 35 20 35V20H35C35 11.7157 28.2843 5 20 5Z" fill="#22C55E"></path>
-                <path d="M20 35C28.2843 35 35 28.2843 35 20H20V35Z" fill="#EF4444"></path>
-                <circle cx="20" cy="20" fill="white" r="4"></circle>
-              </svg>
+        <div className="max-w-7xl mx-auto">
+          {/* Newsletter Section */}
+          <div className="mb-12 pb-12 border-b border-slate-100">
+            <div className="max-w-2xl mx-auto text-center">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Stay Updated</h3>
+              <p className="text-slate-600 mb-6">Get the latest healthcare insights and platform updates delivered to your inbox.</p>
+              <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  aria-label="Email address for newsletter"
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-primary hover:bg-blue-600 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20"
+                >
+                  Subscribe
+                </button>
+              </form>
             </div>
-            <span className="font-bold text-slate-400">UzimaCare © 2026</span>
           </div>
-          <div className="flex gap-6 text-sm text-slate-500">
-            <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-            <a className="hover:text-primary transition-colors" href="#">Contact</a>
+
+          {/* Main Footer Content */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/logo/logo.png"
+                alt="UzimaCare"
+                width={24}
+                height={24}
+                className="h-6 w-auto opacity-50 grayscale"
+              />
+              <span className="font-bold text-slate-400">UzimaCare © 2026</span>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-primary hover:text-white text-slate-500 flex items-center justify-center transition-all"
+                aria-label="LinkedIn"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-primary hover:text-white text-slate-500 flex items-center justify-center transition-all"
+                aria-label="Twitter"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-primary hover:text-white text-slate-500 flex items-center justify-center transition-all"
+                aria-label="Contact Email"
+              >
+                <span className="material-symbols-outlined">mail</span>
+              </a>
+            </div>
+
+            <div className="flex gap-6 text-sm text-slate-500">
+              <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+              <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
+              <a className="hover:text-primary transition-colors" href="#">Contact</a>
+            </div>
           </div>
         </div>
       </footer>
