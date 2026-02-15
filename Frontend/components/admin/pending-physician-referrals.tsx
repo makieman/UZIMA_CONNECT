@@ -34,7 +34,6 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
   const incrementStk = useMutation(api.referrals.incrementStkCount);
   const createPayment = useMutation(api.payments.createPayment);
   const callMpesaStk = useAction(api.mpesaApi.callMpesaStkPush);
-  const testEnv = useAction(api.testMpesa.testEnvVars);
 
   const [biodataCode, setBiodataCode] = useState<string | null>(null);
 
@@ -211,58 +210,12 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
     }
   };
 
-  const handleTestEnv = async () => {
-    try {
-      console.log("🧪 Testing M-Pesa environment variables...");
-      const result = await testEnv({});
-      console.log("📋 Environment Variables:", result);
-
-      const allPresent = result.hasConsumerKey && result.hasConsumerSecret &&
-        result.hasShortcode && result.hasPasskey && result.hasCallbackUrl;
-
-      if (allPresent) {
-        alert(`✅ All M-Pesa credentials are loaded!\n\nShortcode: ${result.shortcode}\nCallback: ${result.callbackUrl}\nConsumer Key: ${result.consumerKeyPreview}`);
-      } else {
-        const missing = [];
-        if (!result.hasConsumerKey) missing.push("DARAJA_CONSUMER_KEY");
-        if (!result.hasConsumerSecret) missing.push("DARAJA_CONSUMER_SECRET");
-        if (!result.hasShortcode) missing.push("DARAJA_SHORTCODE");
-        if (!result.hasPasskey) missing.push("DARAJA_PASSKEY");
-        if (!result.hasCallbackUrl) missing.push("DARAJA_CALLBACK_URL");
-
-        alert(`⚠️ Missing M-Pesa credentials:\n\n${missing.join("\n")}\n\nPlease add them to .env.local and restart Convex dev server.`);
-      }
-    } catch (err) {
-      console.error("❌ Test failed:", err);
-      alert(`Error testing environment: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Routine":
-        return "bg-success bg-opacity-10 text-success";
-      case "Urgent":
-        return "bg-warning bg-opacity-10 text-warning";
-      case "Emergency":
-        return "bg-error bg-opacity-10 text-error";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-primary">
           Pending Physician Referrals
         </h2>
-        <Button
-          onClick={handleTestEnv}
-          className="bg-blue-500 text-white hover:bg-blue-600 text-sm"
-        >
-          🧪 Test M-Pesa Config
-        </Button>
       </div>
 
       {referrals.length === 0 ? (
