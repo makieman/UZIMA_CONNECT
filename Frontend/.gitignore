@@ -3,5 +3,5 @@ node_modules/
 .env.local
 
 # Google Cloud credentials
-Frontend/creds.json
-Frontend/set-credentials.js
+creds.json
+set-credentials.js
