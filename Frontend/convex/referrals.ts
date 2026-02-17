@@ -333,42 +333,4 @@ export const getIncomingReferrals = query({
 });
 
 // Record referral outcome (Close the loop)
-export const recordOutcome = mutation({
-  args: {
-    referralId: v.id("referrals"),
-    finalDiagnosis: v.string(),
-    treatmentGiven: v.string(),
-    outcomeNotes: v.string(),
-    demoUserId: v.optional(v.string())
-  },
-  handler: async (ctx, args) => {
-    // SECURITY: Require physician or admin
-    const user = await requireRole(ctx, ["physician", "admin"], args.demoUserId);
 
-    const referral = await ctx.db.get(args.referralId);
-    if (!referral) {
-      throw new Error("Referral not found");
-    }
-
-    // Update referral
-    await ctx.db.patch(args.referralId, {
-      status: "closed",
-      completedAt: Date.now(),
-      outcome: {
-        finalDiagnosis: args.finalDiagnosis,
-        treatmentGiven: args.treatmentGiven,
-        outcomeNotes: args.outcomeNotes,
-        dischargedAt: Date.now(),
-        updatedBy: user._id,
-      }
-    });
-
-    // AUDIT: Log outcome recording
-    await logAudit(ctx, "record_outcome", {
-      diagnosis: args.finalDiagnosis,
-      referralId: args.referralId
-    }, args.referralId);
-
-    return await ctx.db.get(args.referralId);
-  }
-});
