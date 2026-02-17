@@ -307,3 +307,27 @@ export const getCompletedReferrals = query({
       .collect();
   },
 });
+
+
+// Get incoming referrals for a facility (Receiving Physician View)
+export const getIncomingReferrals = query({
+  args: {
+    facilityName: v.string(), // The physician's hospital/facility name
+    demoUserId: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    // SECURITY: Require physician role
+    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+
+    // In a real app, we'd verify the user belongs to this facility via their profile
+    // For now, we trust the client-side filtered facility name, protected by role check
+
+    return await ctx.db
+      .query("referrals")
+      // We don't have an index by receivingFacility yet, so for now we filter
+      // If this grows, we should add .index("by_receiving_facility", ["receivingFacility"]) to schema
+      .filter((q) => q.eq(q.field("receivingFacility"), args.facilityName))
+      .order("desc")
+      .collect();
+  },
+});
