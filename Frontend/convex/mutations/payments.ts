@@ -27,20 +27,33 @@ export const processPaymentResult = mutation({
             // Still return the info needed for SMS in case the SMS failed previously but DB was updated
             let patientName = "Patient";
             let referralToken = "";
+            let date = "N/A";
+            let time = "N/A";
+            let clinic = "Afiya Connect";
+            let email = "N/A";
 
             if (payment.referralId) {
                 const referral = await ctx.db.get(payment.referralId);
                 if (referral) {
                     patientName = referral.patientName;
                     referralToken = referral.referralToken || "";
+                    email = (referral as any).patientEmail || "N/A";
                 }
             } else if (payment.bookingId) {
                 const booking = await ctx.db.get(payment.bookingId);
-                if (booking?.referralId) {
-                    const ref = await ctx.db.get(booking.referralId);
-                    if (ref) {
-                        patientName = ref.patientName;
-                        referralToken = ref.referralToken || "";
+                if (booking) {
+                    date = booking.bookingDate;
+                    time = booking.bookingTime;
+
+                    const clinicRecord = await ctx.db.get(booking.clinicId as any);
+                    clinic = (clinicRecord as any)?.name || (clinicRecord as any)?.facilityName || "Afiya Connect";
+
+                    if (booking.referralId) {
+                        const ref = await ctx.db.get(booking.referralId);
+                        if (ref) {
+                            patientName = ref.patientName;
+                            referralToken = ref.referralToken || "";
+                        }
                     }
                 }
             }
@@ -53,7 +66,11 @@ export const processPaymentResult = mutation({
                 phoneNumber: payment.phoneNumber,
                 amount: payment.amount,
                 patientName,
-                referralToken
+                referralToken,
+                date,
+                time,
+                clinic,
+                email
             };
         }
 
@@ -71,6 +88,10 @@ export const processPaymentResult = mutation({
         let clinicName = "";
         let patientName = "Patient";
         let referralToken = "";
+        let date = "N/A";
+        let time = "N/A";
+        let clinic = "Afiya Connect";
+        let email = "N/A";
 
         if (status === "completed") {
             // 4a. Update Referral if linked
@@ -79,6 +100,7 @@ export const processPaymentResult = mutation({
                 if (referral) {
                     patientName = referral.patientName;
                     referralToken = referral.referralToken || "";
+                    email = (referral as any).patientEmail || "N/A";
                     await ctx.db.patch(referral._id, {
                         status: "paid",
                         paidAt: Date.now(),
@@ -130,7 +152,8 @@ export const processPaymentResult = mutation({
             referralToken,
             date: bookingDate,
             time: bookingTime,
-            clinic: clinicName
+            clinic: clinicName,
+            email
         };
     },
 });

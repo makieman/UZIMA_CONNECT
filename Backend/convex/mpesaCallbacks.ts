@@ -45,19 +45,39 @@ export const mpesaCallback = httpAction(async (ctx, request) => {
       });
     }
 
-    // 2. If payment was successful, trigger SMS (Fire and Forget or Log)
+    // 2. If payment was successful, trigger notifications
     if (result.status === "completed") {
+      // Send SMS
       try {
         await ctx.runAction((api as any).actions.notifications.sendPaymentConfirmationSMS, {
           phoneNumber: result.phoneNumber,
           name: result.patientName,
           amount: result.amount,
           token: result.referralToken,
+          date: result.date,
+          time: result.time,
+          clinic: result.clinic,
         });
         console.log(`SMS trigger scheduled for ${result.phoneNumber}`);
       } catch (smsError) {
         console.error("Failed to trigger SMS action:", smsError);
-        // We don't fail the whole callback if just SMS fails
+      }
+
+      // Send Email if available
+      if (result.email && result.email !== "N/A") {
+        try {
+          await ctx.runAction((api as any).actions.emails.sendBookingConfirmationEmail, {
+            email: result.email,
+            name: result.patientName,
+            date: result.date,
+            time: result.time,
+            clinic: result.clinic,
+            token: result.referralToken,
+          });
+          console.log(`Email trigger scheduled for ${result.email}`);
+        } catch (emailError) {
+          console.error("Failed to trigger Email action:", emailError);
+        }
       }
     }
 

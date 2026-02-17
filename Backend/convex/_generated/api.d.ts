@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as actions_emails from "../actions/emails.js";
 import type * as actions_mpesa from "../actions/mpesa.js";
 import type * as actions_notifications from "../actions/notifications.js";
 import type * as audit from "../audit.js";
@@ -56,6 +57,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/emails": typeof actions_emails;
   "actions/mpesa": typeof actions_mpesa;
   "actions/notifications": typeof actions_notifications;
   audit: typeof audit;
