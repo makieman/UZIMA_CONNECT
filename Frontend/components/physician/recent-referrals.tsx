@@ -94,7 +94,7 @@ export default function RecentReferrals({ referrals, onViewAll }: RecentReferral
                                         {referral.patientName || "Unknown Patient"}
                                     </h4>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Date: {format(new Date(referral._creationTime), "MMM d, yyyy")} • {referral.department || "General"}
+                                        Date: {format(new Date(referral._creationTime), "MMM d, yyyy")} • General
                                     </p>
                                 </div>
                             </div>
