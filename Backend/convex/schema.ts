@@ -90,6 +90,7 @@ const applicationTables = {
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
   })
+
     .index("by_physician", ["physicianId"])
     .index("by_status", ["status"])
     .index("by_token", ["referralToken"])

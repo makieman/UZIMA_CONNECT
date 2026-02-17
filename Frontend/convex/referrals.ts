@@ -307,3 +307,68 @@ export const getCompletedReferrals = query({
       .collect();
   },
 });
+
+
+// Get incoming referrals for a facility (Receiving Physician View)
+export const getIncomingReferrals = query({
+  args: {
+    facilityName: v.string(), // The physician's hospital/facility name
+    demoUserId: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    // SECURITY: Require physician role
+    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+
+    // In a real app, we'd verify the user belongs to this facility via their profile
+    // For now, we trust the client-side filtered facility name, protected by role check
+
+    return await ctx.db
+      .query("referrals")
+      // We don't have an index by receivingFacility yet, so for now we filter
+      // If this grows, we should add .index("by_receiving_facility", ["receivingFacility"]) to schema
+      .filter((q) => q.eq(q.field("receivingFacility"), args.facilityName))
+      .order("desc")
+      .collect();
+  },
+});
+
+// Record referral outcome (Close the loop)
+export const recordOutcome = mutation({
+  args: {
+    referralId: v.id("referrals"),
+    finalDiagnosis: v.string(),
+    treatmentGiven: v.string(),
+    outcomeNotes: v.string(),
+    demoUserId: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    // SECURITY: Require physician or admin
+    const user = await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+
+    const referral = await ctx.db.get(args.referralId);
+    if (!referral) {
+      throw new Error("Referral not found");
+    }
+
+    // Update referral
+    await ctx.db.patch(args.referralId, {
+      status: "closed",
+      completedAt: Date.now(),
+      outcome: {
+        finalDiagnosis: args.finalDiagnosis,
+        treatmentGiven: args.treatmentGiven,
+        outcomeNotes: args.outcomeNotes,
+        dischargedAt: Date.now(),
+        updatedBy: user._id,
+      }
+    });
+
+    // AUDIT: Log outcome recording
+    await logAudit(ctx, "record_outcome", {
+      diagnosis: args.finalDiagnosis,
+      referralId: args.referralId
+    }, args.referralId);
+
+    return await ctx.db.get(args.referralId);
+  }
+});

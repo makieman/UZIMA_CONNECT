@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import CreateReferralPage from "./create-referral";
 import PendingReferralsPage from "./pending-referrals";
 import CompletedReferralsPage from "./completed-referrals";
+import IncomingReferralsPage from "./incoming-referrals";
 import RecentReferrals from "./recent-referrals";
 import ReferralActivityChart from "./referral-chart";
 import { useQuery } from "convex/react";
@@ -26,7 +27,8 @@ import {
   FileText,
   LogOut,
   Menu,
-  X
+  X,
+  ArrowDownLeft
 } from "lucide-react";
 
 interface PhysicianDashboardProps {
@@ -35,7 +37,7 @@ interface PhysicianDashboardProps {
   onLogout: () => void;
 }
 
-type PhysicianPage = "dashboard" | "create" | "pending" | "completed";
+type PhysicianPage = "dashboard" | "create" | "pending" | "completed" | "incoming";
 
 export default function PhysicianDashboard({
   user,
@@ -96,6 +98,9 @@ export default function PhysicianDashboard({
   if (currentPage === "completed") {
     return <CompletedReferralsPage physician={user} token={token} onBack={() => setCurrentPage("dashboard")} />;
   }
+  if (currentPage === "incoming") {
+    return <IncomingReferralsPage physician={user} token={token} onBack={() => setCurrentPage("dashboard")} />;
+  }
 
   // Calculate Percentage Growth (Mock for demo)
   const growth = "+12%";
@@ -141,18 +146,18 @@ export default function PhysicianDashboard({
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:bg-white/10 rounded-full transition-colors focus:ring-2 focus:ring-white/30" 
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 rounded-full transition-colors focus:ring-2 focus:ring-white/30"
                 onClick={onLogout}
                 aria-label="Logout"
               >
                 <LogOut className="w-5 h-5" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="text-white hover:bg-white/10 rounded-full transition-colors focus:ring-2 focus:ring-white/30 relative"
                 aria-label="Notifications"
               >
@@ -184,14 +189,14 @@ export default function PhysicianDashboard({
                   <p className="text-xs text-gray-500 dark:text-gray-400">{user?.hospital || "Nairobi Central Hospital"}</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => { setCurrentPage("dashboard"); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <LayoutDashboard className="w-5 h-5 text-primary" />
                 <span className="font-medium">Dashboard</span>
               </button>
-              <button 
+              <button
                 onClick={() => { setCurrentPage("pending"); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
@@ -201,14 +206,21 @@ export default function PhysicianDashboard({
                   <span className="ml-auto bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full">{counts.pending}</span>
                 )}
               </button>
-              <button 
+              <button
                 onClick={() => { setCurrentPage("completed"); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
                 <span className="font-medium">Completed</span>
               </button>
-              <button 
+              <button
+                onClick={() => { setCurrentPage("incoming"); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ArrowDownLeft className="w-5 h-5 text-purple-600" />
+                <span className="font-medium">My Patients (Incoming)</span>
+              </button>
+              <button
                 onClick={() => { setCurrentPage("create"); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
@@ -216,7 +228,7 @@ export default function PhysicianDashboard({
                 <span className="font-medium">New Referral</span>
               </button>
               <div className="border-t border-gray-100 dark:border-gray-700 pt-2 mt-2">
-                <button 
+                <button
                   onClick={() => { onLogout(); setMobileMenuOpen(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
@@ -246,7 +258,7 @@ export default function PhysicianDashboard({
           <section className="pt-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {/* Total Referrals */}
-              <button 
+              <button
                 onClick={() => setCurrentPage("completed")}
                 className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-l-primary flex flex-col justify-between h-36 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary/30 text-left"
                 aria-label={`View ${counts.total} total referrals`}
@@ -265,30 +277,28 @@ export default function PhysicianDashboard({
                 </div>
               </button>
 
-              {/* Pending */}
-              <button 
-                onClick={() => setCurrentPage("pending")}
-                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-l-orange-500 flex flex-col justify-between h-36 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-orange-500/30 text-left"
-                aria-label={`View ${counts.pending} pending referrals`}
+              {/* Incoming Patients */}
+              <button
+                onClick={() => setCurrentPage("incoming")}
+                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-l-purple-500 flex flex-col justify-between h-36 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-500/30 text-left"
+                aria-label="View incoming patients"
               >
                 <div className="flex justify-between items-start">
-                  <div className="bg-orange-50 dark:bg-orange-900/30 p-2.5 rounded-xl group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
-                    <Hourglass className="text-orange-500 w-6 h-6" />
+                  <div className="bg-purple-50 dark:bg-purple-900/30 p-2.5 rounded-xl group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
+                    <ArrowDownLeft className="text-purple-500 w-6 h-6" />
                   </div>
-                  {counts.pending > 0 && (
-                    <span className="text-[10px] font-bold text-orange-600 flex items-center bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded-full">
-                      {counts.pending} New
-                    </span>
-                  )}
+                  <span className="text-[10px] font-bold text-purple-600 flex items-center bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
                 </div>
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Pending</p>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{counts.pending}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Incoming Patients</p>
+                  <h3 className="text-md font-bold text-gray-900 dark:text-gray-100 mt-1">View & Admit</h3>
                 </div>
               </button>
 
               {/* Completed */}
-              <button 
+              <button
                 onClick={() => setCurrentPage("completed")}
                 className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-l-green-500 flex flex-col justify-between h-36 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-green-500/30 text-left"
                 aria-label={`View ${counts.completed} completed referrals`}
@@ -305,7 +315,7 @@ export default function PhysicianDashboard({
               </button>
 
               {/* Needs Action */}
-              <button 
+              <button
                 className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-l-red-500 flex flex-col justify-between h-36 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-red-500/30 text-left"
                 aria-label={`${counts.urgent} referrals need action`}
               >
@@ -353,35 +363,33 @@ export default function PhysicianDashboard({
 
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800 px-8 py-3 flex justify-between items-center z-40 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)] md:hidden" role="navigation" aria-label="Mobile navigation">
-          <button 
-            className={`flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 ${currentPage === "dashboard" ? "text-primary" : "text-gray-400 hover:text-primary"}`} 
+          <button
+            className="flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 text-primary"
             onClick={() => setCurrentPage("dashboard")}
             aria-label="Dashboard"
-            aria-current={currentPage === "dashboard" ? "page" : undefined}
+            aria-current="page"
           >
             <LayoutDashboard className="w-6 h-6" />
             <span className="text-[10px] font-medium">Home</span>
           </button>
-          <button 
-            className={`flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 ${currentPage === "pending" ? "text-primary" : "text-gray-400 hover:text-primary"}`}
+          <button
+            className="flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 text-gray-400 hover:text-primary"
             onClick={() => setCurrentPage("pending")}
             aria-label="Patients"
-            aria-current={currentPage === "pending" ? "page" : undefined}
           >
             <Users className="w-6 h-6" />
             <span className="text-[10px] font-medium">Patients</span>
           </button>
           <div className="w-10"></div> {/* Spacer for FAB */}
-          <button 
-            className={`flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 ${currentPage === "create" ? "text-primary" : "text-gray-400 hover:text-primary"}`}
+          <button
+            className="flex flex-col items-center space-y-1 p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 text-gray-400 hover:text-primary"
             onClick={() => setCurrentPage("create")}
             aria-label="Create Referral"
-            aria-current={currentPage === "create" ? "page" : undefined}
           >
             <Plus className="w-6 h-6" />
             <span className="text-[10px] font-medium">Create</span>
           </button>
-          <button 
+          <button
             className="flex flex-col items-center text-gray-400 hover:text-red-600 transition-colors space-y-1 p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/30"
             onClick={onLogout}
             aria-label="Logout"
