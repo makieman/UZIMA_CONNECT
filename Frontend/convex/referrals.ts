@@ -54,7 +54,7 @@ export const createReferral = mutation({
     }
 
     const { demoUserId, ...referralData } = args;
-    
+
     const referralId = await ctx.db.insert("referrals", {
       ...referralData,
       status: "pending-admin",
@@ -188,6 +188,7 @@ export const saveBiodata = mutation({
     referralId: v.id("referrals"),
     patientPhone: v.string(),
     stkPhoneNumber: v.string(),
+    patientEmail: v.optional(v.string()),
     patientDateOfBirth: v.optional(v.string()),
     patientNationalId: v.optional(v.string()),
     bookedDate: v.optional(v.string()),
@@ -213,10 +214,11 @@ export const saveBiodata = mutation({
     });
 
     // AUDIT: Log biodata save
-    await logAudit(ctx, "save_biodata", { 
+    await logAudit(ctx, "save_biodata", {
       patientPhone: biodata.patientPhone,
       stkPhoneNumber: biodata.stkPhoneNumber,
-      biodataCode: biodata.biodataCode 
+      patientEmail: biodata.patientEmail,
+      biodataCode: biodata.biodataCode
     }, referralId);
 
     return await ctx.db.get(referralId);

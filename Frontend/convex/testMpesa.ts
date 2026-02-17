@@ -44,6 +44,9 @@ export const testSms = action({
         name: v.optional(v.string()),
         amount: v.optional(v.number()),
         token: v.optional(v.string()),
+        date: v.optional(v.string()),
+        time: v.optional(v.string()),
+        clinic: v.optional(v.string()),
     },
     handler: async (ctx, args): Promise<any> => {
         console.log("Testing SMS Sending...");
@@ -55,9 +58,9 @@ export const testSms = action({
             name: args.name ?? "Test User",
             amount: args.amount ?? 1,
             token: args.token ?? "TEST-TOKEN-123",
-            date: "2024-01-01",
-            time: "10:00 AM",
-            clinic: "Test Clinic",
+            date: args.date ?? "2024-01-01",
+            time: args.time ?? "10:00 AM",
+            clinic: args.clinic ?? "Test Clinic",
         });
 
         console.log("SMS Test Result:", result);

@@ -78,6 +78,7 @@ const applicationTables = {
     referralToken: v.optional(v.string()),
     patientPhone: v.optional(v.string()),
     stkPhoneNumber: v.optional(v.string()),
+    patientEmail: v.optional(v.string()),
     patientDateOfBirth: v.optional(v.string()),
     patientNationalId: v.optional(v.string()),
     bookedDate: v.optional(v.string()),

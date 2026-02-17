@@ -15,7 +15,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
   const [biodataForm, setBiodataForm] = useState({
     patientPhone: "",
     stkPhoneNumber: "",
-    patientDateOfBirth: "",
+    patientEmail: "",
     patientNationalId: "",
     bookedDate: "",
   });
@@ -53,7 +53,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
     setBiodataForm({
       patientPhone: referral.patientPhone || "",
       stkPhoneNumber: referral.stkPhoneNumber || "",
-      patientDateOfBirth: referral.patientDateOfBirth || "",
+      patientEmail: referral.patientEmail || "",
       patientNationalId: referral.patientNationalId || "",
       bookedDate: referral.bookedDate || "",
     });
@@ -74,7 +74,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
         referralId: selectedReferral._id,
         patientPhone: biodataForm.patientPhone,
         stkPhoneNumber: biodataForm.stkPhoneNumber,
-        patientDateOfBirth: biodataForm.patientDateOfBirth,
+        patientEmail: biodataForm.patientEmail,
         patientNationalId: biodataForm.patientNationalId,
         bookedDate: biodataForm.bookedDate,
         biodataCode: biodataCode || undefined,
@@ -207,6 +207,19 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
       alert("Referral confirmed and moved to completed referrals!");
     } catch (err) {
       alert("Error confirming payment");
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "Routine":
+        return "bg-green-100 text-green-800";
+      case "Urgent":
+        return "bg-yellow-100 text-yellow-800";
+      case "Emergency":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -438,15 +451,15 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Date of Birth
+                    Patient Email
                   </label>
                   <input
-                    type="date"
-                    value={biodataForm.patientDateOfBirth}
+                    type="email"
+                    value={biodataForm.patientEmail}
                     onChange={(e) =>
                       setBiodataForm({
                         ...biodataForm,
-                        patientDateOfBirth: e.target.value,
+                        patientEmail: e.target.value,
                       })
                     }
                     className="input-base"
