@@ -67,8 +67,14 @@ export default function PhysicianLogin({
       saveAuthState("convex-session", placeholderData);
       onLoginSuccess(placeholderData, "convex-session");
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Invalid credentials.");
+      const msg = (err?.message || String(err)).toLowerCase();
+      if (msg.includes("invalid password") || msg.includes("incorrect")) {
+        setError("Incorrect password. Please try again.");
+      } else if (msg.includes("could not find") || msg.includes("invalidaccountid") || msg.includes("not found")) {
+        setError("No account found with these credentials. Check your License ID and try again.");
+      } else {
+        setError("Login failed. Please check your credentials and try again.");
+      }
     } finally {
       setLoading(false);
     }

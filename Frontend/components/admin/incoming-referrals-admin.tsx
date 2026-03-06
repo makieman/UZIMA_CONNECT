@@ -17,7 +17,7 @@ export default function IncomingReferralsAdmin({ user }: { user?: any }) {
 
     const referrals = incomingReferrals || [];
 
-    const handleStatusUpdate = async (referral: any, newStatus: string) => {
+    const handleStatusUpdate = async (referral: any, newStatus: "pending-admin" | "awaiting-biodata" | "pending-payment" | "confirmed" | "paid" | "completed" | "cancelled") => {
         setLoading(true);
         try {
             await updateReferral({

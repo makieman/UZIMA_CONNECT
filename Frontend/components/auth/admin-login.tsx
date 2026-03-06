@@ -55,10 +55,14 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       onLoginSuccess(genericAdminData, "convex-session");
 
     } catch (err: any) {
-      console.error("Login Error:", err);
-      // Fallback display to user, stringifying specific message if available
-      const errMsg = err?.message || String(err);
-      setError("Login failed: " + errMsg.replace("Uncaught Error: ", ""));
+      const msg = (err?.message || String(err)).toLowerCase();
+      if (msg.includes("invalid password") || msg.includes("incorrect")) {
+        setError("Incorrect password. Please try again.");
+      } else if (msg.includes("could not find") || msg.includes("invalidaccountid") || msg.includes("not found")) {
+        setError("No account found with this email. Check your email and try again.");
+      } else {
+        setError("Login failed. Please check your credentials and try again.");
+      }
     } finally {
       setLoading(false);
     }
