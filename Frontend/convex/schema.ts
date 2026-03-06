@@ -3,9 +3,30 @@ import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
 const applicationTables = {
+  // Hospitals table for central registry
+  hospitals: defineTable({
+    name: v.string(),
+    code: v.string(),
+    county: v.optional(v.string()),
+    level: v.optional(v.string()),
+    contactPhone: v.optional(v.string()),
+    contactEmail: v.optional(v.string()),
+    isActive: v.boolean(),
+    createdAt: v.optional(v.number()),
+  })
+    .index("by_code", ["code"])
+    .index("by_county", ["county"])
+    .index("by_active", ["isActive"])
+    .searchIndex("search_name", { searchField: "name" }),
   // Users table for authentication and basic user info
   users: defineTable({
-    role: v.union(v.literal("patient"), v.literal("admin"), v.literal("physician")),
+    role: v.union(
+      v.literal("patient"),
+      v.literal("physician"),
+      v.literal("facility_admin"),
+      v.literal("super_admin")
+    ),
+    hospitalId: v.optional(v.id("hospitals")),
     email: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
     fullName: v.string(),
@@ -15,20 +36,24 @@ const applicationTables = {
   })
     .index("by_email", ["email"])
     .index("by_phone", ["phoneNumber"])
-    .index("by_role", ["role"]),
+    .index("by_role", ["role"])
+    .index("by_hospital", ["hospitalId"]),
 
   // Physicians table
   physicians: defineTable({
     userId: v.id("users"),
     licenseId: v.string(),
-    hospital: v.string(),
+    hospital: v.optional(v.string()),
+    hospitalId: v.optional(v.id("hospitals")),
     specialization: v.optional(v.string()),
     isVerified: v.boolean(),
+    initialPassword: v.optional(v.string()),
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
-    .index("by_license", ["licenseId"]),
+    .index("by_license", ["licenseId"])
+    .index("by_hospital", ["hospitalId"]),
 
   // Patients table
   patients: defineTable({
@@ -63,8 +88,10 @@ const applicationTables = {
     medicalHistory: v.string(),
     labResults: v.string(),
     diagnosis: v.string(),
-    referringHospital: v.string(),
-    receivingFacility: v.string(),
+    referringHospital: v.optional(v.string()),
+    receivingFacility: v.optional(v.string()),
+    referringHospitalId: v.optional(v.id("hospitals")),
+    receivingHospitalId: v.optional(v.id("hospitals")),
     priority: v.union(v.literal("Routine"), v.literal("Urgent"), v.literal("Emergency")),
     status: v.union(
       v.literal("pending-admin"),
@@ -94,7 +121,9 @@ const applicationTables = {
     .index("by_physician", ["physicianId"])
     .index("by_status", ["status"])
     .index("by_token", ["referralToken"])
-    .index("by_patient_id", ["patientId"]),
+    .index("by_patient_id", ["patientId"])
+    .index("by_receiving_hospital", ["receivingHospitalId"])
+    .index("by_referring_hospital", ["referringHospitalId"]),
 
   // Bookings table
   bookings: defineTable({

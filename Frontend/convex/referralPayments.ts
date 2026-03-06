@@ -8,11 +8,10 @@ export const triggerReferralPayment = mutation({
     referralId: v.id("referrals"),
     phoneNumber: v.string(),
     amount: v.optional(v.number()),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     // Get referral details
     const referral = await ctx.db.get(args.referralId);
@@ -43,11 +42,10 @@ export const triggerReferralPayment = mutation({
 export const retrySTKPush = mutation({
   args: {
     referralId: v.id("referrals"),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     // Get referral details
     const referral = await ctx.db.get(args.referralId);

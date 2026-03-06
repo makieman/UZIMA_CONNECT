@@ -1,0 +1,5 @@
+﻿components/auth/admin-login.tsx(30,19): error TS2367: This comparison appears to be unintentional because the types '"patient" | "physician" | "facility_admin" | "super_admin"' and '"admin"' have no overlap.
+convex/payments.ts(223,64): error TS2339: Property 'userId' does not exist on type '{ _id: Id<"hospitals">; _creationTime: number; county?: string; level?: string; contactPhone?: string; contactEmail?: string; createdAt?: number; name: string; code: string; isActive: boolean; } | ... 15 more ... | { ...; }'.
+  Property 'userId' does not exist on type '{ _id: Id<"hospitals">; _creationTime: number; county?: string; level?: string; contactPhone?: string; contactEmail?: string; createdAt?: number; name: string; code: string; isActive: boolean; }'.
+convex/seedData.ts(16,7): error TS2322: Type '"admin"' is not assignable to type '"patient" | "physician" | "facility_admin" | "super_admin"'.
+convex/vision.ts(22,13): error TS2353: Object literal may only specify known properties, and 'demoUserId' does not exist in type '{ roles: string[]; }'.

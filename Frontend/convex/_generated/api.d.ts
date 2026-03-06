@@ -8,8 +8,10 @@
  * @module
  */
 
+import type * as actions_emails from "../actions/emails.js";
 import type * as actions_mpesa from "../actions/mpesa.js";
 import type * as actions_notifications from "../actions/notifications.js";
+import type * as adminOnboarding from "../adminOnboarding.js";
 import type * as audit from "../audit.js";
 import type * as auth from "../auth.js";
 import type * as bookings from "../bookings.js";
@@ -20,13 +22,18 @@ import type * as debug from "../debug.js";
 import type * as debugStk from "../debugStk.js";
 import type * as debugStkError from "../debugStkError.js";
 import type * as directStkTest from "../directStkTest.js";
+import type * as files from "../files.js";
+import type * as gemini from "../gemini.js";
+import type * as hospitals from "../hospitals.js";
 import type * as http from "../http.js";
+import type * as logging from "../logging.js";
 import type * as mpesa from "../mpesa.js";
 import type * as mpesaApi from "../mpesaApi.js";
 import type * as mpesaCallbacks from "../mpesaCallbacks.js";
 import type * as mutations_mpesa from "../mutations/mpesa.js";
 import type * as mutations_payments from "../mutations/payments.js";
 import type * as notifications from "../notifications.js";
+import type * as openai from "../openai.js";
 import type * as paymentTracking from "../paymentTracking.js";
 import type * as payments from "../payments.js";
 import type * as permissions from "../permissions.js";
@@ -43,6 +50,7 @@ import type * as stkTest from "../stkTest.js";
 import type * as testMpesa from "../testMpesa.js";
 import type * as testMpesaAuth from "../testMpesaAuth.js";
 import type * as users from "../users.js";
+import type * as vision from "../vision.js";
 
 import type {
   ApiFromModules,
@@ -51,8 +59,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/emails": typeof actions_emails;
   "actions/mpesa": typeof actions_mpesa;
   "actions/notifications": typeof actions_notifications;
+  adminOnboarding: typeof adminOnboarding;
   audit: typeof audit;
   auth: typeof auth;
   bookings: typeof bookings;
@@ -63,13 +73,18 @@ declare const fullApi: ApiFromModules<{
   debugStk: typeof debugStk;
   debugStkError: typeof debugStkError;
   directStkTest: typeof directStkTest;
+  files: typeof files;
+  gemini: typeof gemini;
+  hospitals: typeof hospitals;
   http: typeof http;
+  logging: typeof logging;
   mpesa: typeof mpesa;
   mpesaApi: typeof mpesaApi;
   mpesaCallbacks: typeof mpesaCallbacks;
   "mutations/mpesa": typeof mutations_mpesa;
   "mutations/payments": typeof mutations_payments;
   notifications: typeof notifications;
+  openai: typeof openai;
   paymentTracking: typeof paymentTracking;
   payments: typeof payments;
   permissions: typeof permissions;
@@ -86,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   testMpesa: typeof testMpesa;
   testMpesaAuth: typeof testMpesaAuth;
   users: typeof users;
+  vision: typeof vision;
 }>;
 
 /**

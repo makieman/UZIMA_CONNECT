@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireRole, checkPhysicianAccess } from "./permissions";
+import { requireRole, checkPhysicianAccess, requireFacilityScope } from "./permissions";
 import { logAudit } from "./audit";
 
 // Generate referral token
@@ -22,14 +22,15 @@ export const createReferral = mutation({
     medicalHistory: v.string(),
     labResults: v.string(),
     diagnosis: v.string(),
-    referringHospital: v.string(),
-    receivingFacility: v.string(),
+    referringHospital: v.optional(v.string()),
+    receivingFacility: v.optional(v.string()),
+    referringHospitalId: v.optional(v.id("hospitals")),
+    receivingHospitalId: v.optional(v.id("hospitals")),
     priority: v.union(v.literal("Routine"), v.literal("Urgent"), v.literal("Emergency")),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require physician role
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+    await requireRole(ctx, ["physician", "super_admin"]);
 
     // Check for existing token for same patient ID
     let token: string | undefined;
@@ -53,7 +54,7 @@ export const createReferral = mutation({
       token = generateToken();
     }
 
-    const { demoUserId, ...referralData } = args;
+    const { ...referralData } = args;
 
     const referralId = await ctx.db.insert("referrals", {
       ...referralData,
@@ -73,11 +74,10 @@ export const createReferral = mutation({
 export const getReferralsByPhysician = query({
   args: {
     physicianId: v.id("physicians"),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    // SECURITY: Ensure physician can only see their own referrals or admin (with demo bypass)
-    await checkPhysicianAccess(ctx, args.physicianId, args.demoUserId);
+    // SECURITY: Ensure physician can only see their own referrals or admin
+    await checkPhysicianAccess(ctx, args.physicianId);
 
     return await ctx.db
       .query("referrals")
@@ -99,37 +99,47 @@ export const getReferralsByStatus = query({
       v.literal("completed"),
       v.literal("cancelled")
     ),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
-    return await ctx.db
-      .query("referrals")
-      .withIndex("by_status", (q) => q.eq("status", args.status))
-      .order("desc")
-      .collect();
+    const { hospitalId } = await requireFacilityScope(ctx);
+
+    let baseQuery = ctx.db.query("referrals").withIndex("by_status", (q) => q.eq("status", args.status));
+
+    // Apply hospital scope
+    if (hospitalId) {
+      const allReferrals = await baseQuery.order("desc").collect();
+      return allReferrals.filter(r => r.receivingHospitalId === hospitalId || r.referringHospitalId === hospitalId);
+    }
+
+    return await baseQuery.order("desc").collect();
   },
 });
 
-// Get all pending referrals for admin
+// Get all pending referrals for admin (scoped)
 export const getPendingReferrals = query({
-  args: {
-    demoUserId: v.optional(v.string())
-  },
-  handler: async (ctx, args) => {
-    // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+  args: {},
+  handler: async (ctx) => {
+    const { hospitalId } = await requireFacilityScope(ctx);
 
-    return await ctx.db
-      .query("referrals")
-      .filter((q) => q.or(
-        q.eq(q.field("status"), "pending-admin"),
-        q.eq(q.field("status"), "awaiting-biodata"),
-        q.eq(q.field("status"), "pending-payment")
-      ))
-      .order("desc")
-      .collect();
+    let queryFn = ctx.db.query("referrals");
+
+    // Use index if scoped - pending referrals belong to the REFERRING hospital
+    let results;
+    if (hospitalId) {
+      results = await queryFn
+        .withIndex("by_referring_hospital", q => q.eq("referringHospitalId", hospitalId))
+        .collect();
+    } else {
+      results = await queryFn.collect();
+    }
+
+    return results
+      .filter((r) =>
+        r.status === "pending-admin" ||
+        r.status === "awaiting-biodata" ||
+        r.status === "pending-payment"
+      )
+      .sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0));
   },
 });
 
@@ -146,13 +156,12 @@ export const updateReferralStatus = mutation({
       v.literal("completed"),
       v.literal("cancelled")
     ),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+    // SECURITY: Requires facility scope
+    await requireFacilityScope(ctx);
 
-    const { referralId, demoUserId, status } = args;
+    const { referralId, status } = args;
 
     // Get referral details before update
     const referral = await ctx.db.get(referralId);
@@ -160,17 +169,33 @@ export const updateReferralStatus = mutation({
       throw new Error("Referral not found");
     }
 
+    // SECURITY: "paid" can ONLY be set by processPaymentResult, not manually
+    if (status === "paid") {
+      throw new Error("Payment status can only be set by the payment system");
+    }
+
+    // Validate state transitions
+    const validTransitions: Record<string, string[]> = {
+      "pending-admin": ["awaiting-biodata", "cancelled"],
+      "awaiting-biodata": ["pending-payment", "cancelled"],
+      "pending-payment": ["cancelled"],         // "paid" only via payment system
+      "paid": ["confirmed", "cancelled"],
+      "confirmed": ["completed", "cancelled"],
+      "completed": [],                          // Terminal state
+      "cancelled": [],                          // Terminal state
+    };
+    if (!validTransitions[referral.status]?.includes(status)) {
+      throw new Error(`Cannot transition from "${referral.status}" to "${status}"`);
+    }
+
     const updates: any = {
       status,
       updatedAt: Date.now(),
     };
 
-    // Add completion timestamp if status is completed or paid
-    if (status === "completed" || status === "paid") {
+    // Add completion timestamp if status is completed
+    if (status === "completed") {
       updates.completedAt = Date.now();
-      if (status === "paid") {
-        updates.paidAt = Date.now();
-      }
     }
 
     await ctx.db.patch(referralId, updates);
@@ -194,13 +219,12 @@ export const saveBiodata = mutation({
     bookedDate: v.optional(v.string()),
     bookedTime: v.optional(v.string()),
     biodataCode: v.optional(v.string()),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    // SECURITY: Require facility scope
+    await requireFacilityScope(ctx);
 
-    const { referralId, demoUserId, ...biodata } = args;
+    const { referralId, ...biodata } = args;
 
     const referral = await ctx.db.get(referralId);
     if (!referral) {
@@ -231,13 +255,12 @@ export const updatePhoneNumbers = mutation({
     referralId: v.id("referrals"),
     patientPhone: v.string(),
     stkPhoneNumber: v.string(),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    // SECURITY: Require facility scope
+    await requireFacilityScope(ctx);
 
-    const { referralId, demoUserId, ...phones } = args;
+    const { referralId, ...phones } = args;
 
     const referral = await ctx.db.get(referralId);
     if (!referral) {
@@ -259,11 +282,9 @@ export const updatePhoneNumbers = mutation({
 export const incrementStkCount = mutation({
   args: {
     referralId: v.id("referrals"),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireFacilityScope(ctx);
 
     const referral = await ctx.db.get(args.referralId);
     if (!referral) throw new Error("Referral not found");
@@ -287,46 +308,76 @@ export const getReferralByToken = query({
   },
 });
 
-// Get completed referrals
+// Get completed referrals (scoped)
 export const getCompletedReferrals = query({
-  args: {
-    demoUserId: v.optional(v.string())
-  },
-  handler: async (ctx, args) => {
-    // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+  args: {},
+  handler: async (ctx) => {
+    const { hospitalId } = await requireFacilityScope(ctx);
 
-    return await ctx.db
-      .query("referrals")
-      .filter((q) => q.or(
-        q.eq(q.field("status"), "confirmed"),
-        q.eq(q.field("status"), "paid"),
-        q.eq(q.field("status"), "completed")
-      ))
-      .order("desc")
-      .collect();
+    let queryFn = ctx.db.query("referrals");
+
+    // Use index if scoped
+    let results;
+    if (hospitalId) {
+      results = await queryFn
+        .withIndex("by_receiving_hospital", q => q.eq("receivingHospitalId", hospitalId))
+        .collect();
+    } else {
+      results = await queryFn.collect();
+    }
+
+    return results
+      .filter((r) =>
+        r.status === "confirmed" ||
+        r.status === "paid" ||
+        r.status === "completed"
+      )
+      .sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0));
   },
 });
 
-
 // Get incoming referrals for a facility (Receiving Physician View)
 export const getIncomingReferrals = query({
-  args: {
-    facilityName: v.string(), // The physician's hospital/facility name
-    demoUserId: v.optional(v.string())
-  },
-  handler: async (ctx, args) => {
-    // SECURITY: Require physician role
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+  args: {},
+  handler: async (ctx) => {
+    // Now powered purely by the user's hospital assignment
+    const { hospitalId } = await requireFacilityScope(ctx);
 
-    // In a real app, we'd verify the user belongs to this facility via their profile
-    // For now, we trust the client-side filtered facility name, protected by role check
+    if (!hospitalId) {
+      // Super admin sees everything
+      return await ctx.db.query("referrals").order("desc").collect();
+    }
+
+    const referrals = await ctx.db
+      .query("referrals")
+      .withIndex("by_receiving_hospital", q => q.eq("receivingHospitalId", hospitalId))
+      .order("desc")
+      .collect();
+
+    // SECURITY: Only show referrals that have been paid
+    // Receiving hospital must NEVER see pre-payment referrals
+    return referrals.filter(r =>
+      r.status === "paid" ||
+      r.status === "confirmed" ||
+      r.status === "completed"
+    );
+  },
+});
+
+// Get outgoing referrals for a facility (Sending Admin/Physician View)
+export const getOutgoingReferrals = query({
+  args: {},
+  handler: async (ctx) => {
+    const { hospitalId } = await requireFacilityScope(ctx);
+
+    if (!hospitalId) {
+      // Super admin sees everything
+      return await ctx.db.query("referrals").order("desc").collect();
+    }
 
     return await ctx.db
       .query("referrals")
-      // We don't have an index by receivingFacility yet, so for now we filter
-      // If this grows, we should add .index("by_receiving_facility", ["receivingFacility"]) to schema
-      .filter((q) => q.eq(q.field("receivingFacility"), args.facilityName))
+      .withIndex("by_referring_hospital", q => q.eq("referringHospitalId", hospitalId))
       .order("desc")
       .collect();
   },

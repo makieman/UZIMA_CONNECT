@@ -1,6 +1,7 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { sendToCloudLog } from "./logging";
 
 // Simple test action to verify M-Pesa environment variables are loaded
 export const testEnvVars = action({
@@ -36,6 +37,23 @@ export const testEnvVars = action({
     }
 });
 
+// Test action to verify Google Cloud Logging integration
+export const testCloudLogging = action({
+    args: {
+        message: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        console.log("Testing Google Cloud Logging...");
+
+        await sendToCloudLog(ctx, "CLOUD_LOGGING_TEST", {
+            message: args.message ?? "This is a test log from Convex",
+            timestamp: new Date().toISOString()
+        }, "INFO");
+
+        return { success: true, message: "Test log sent to forwarder" };
+    }
+});
+
 // Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
 // Test Africa's Talking SMS sending (useful to verify credentials/delivery independently of M-Pesa callbacks)
 export const testSms = action({
@@ -58,9 +76,9 @@ export const testSms = action({
             name: args.name ?? "Test User",
             amount: args.amount ?? 1,
             token: args.token ?? "TEST-TOKEN-123",
-            date: args.date ?? "2024-01-01",
-            time: args.time ?? "10:00 AM",
-            clinic: args.clinic ?? "Test Clinic",
+            date: args.date ?? "2026-02-16",
+            time: args.time ?? "14:00",
+            clinic: args.clinic ?? "Afiya Connect Central",
         });
 
         console.log("SMS Test Result:", result);

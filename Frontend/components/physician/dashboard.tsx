@@ -56,7 +56,7 @@ export default function PhysicianDashboard({
   const physicianId = user?.id as Id<"physicians">;
 
   const referrals = useQuery(api.referrals.getReferralsByPhysician,
-    physicianId ? { physicianId, demoUserId: user?.userId } : "skip" // Handle demo user or real ID
+    physicianId ? { physicianId } : "skip" // Handle demo user or real ID
   );
 
   useEffect(() => {

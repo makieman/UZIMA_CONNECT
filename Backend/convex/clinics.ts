@@ -11,11 +11,10 @@ export const createClinic = mutation({
     location: v.string(),
     maxPatientsPerDay: v.number(),
     contactPhone: v.optional(v.string()),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     const clinicId = await ctx.db.insert("clinics", {
       ...args,
@@ -58,11 +57,10 @@ export const updateClinic = mutation({
     maxPatientsPerDay: v.optional(v.number()),
     contactPhone: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     const { clinicId, ...updates } = args;
     await ctx.db.patch(clinicId, updates);

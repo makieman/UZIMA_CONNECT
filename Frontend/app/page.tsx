@@ -13,10 +13,10 @@ export default function LandingPage() {
   useEffect(() => {
     const auth = getAuthState();
     if (auth && auth.user) {
-      if (auth.user.role === "admin") {
-        router.push("/admin/dashboard");
+      if (auth.user.role === "facility_admin" || auth.user.role === "super_admin") {
+        router.replace("/admin/dashboard");
       } else if (auth.user.role === "physician") {
-        router.push("/physician/dashboard");
+        router.replace("/physician/dashboard");
       }
     }
   }, [router]);

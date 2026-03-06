@@ -25,10 +25,7 @@ export default function IncomingReferralsPage({
 
     // Fetch incoming referrals for this physician's facility
     const incomingReferrals = useQuery(api.referrals.getIncomingReferrals,
-        physician?.hospital ? {
-            facilityName: physician.hospital,
-            demoUserId: physician.userId
-        } : "skip"
+        physician?.id ? {} : "skip"
     );
 
     const activeReferrals = incomingReferrals?.filter((r: any) =>
@@ -88,7 +85,7 @@ export default function IncomingReferralsPage({
                                             </div>
                                             <div>
                                                 <span className="text-gray-500">Arrival Date:</span>
-                                                <p className="font-medium">{new Date(referral.createdAt).toLocaleDateString()}</p>
+                                                <p className="font-medium">{referral.createdAt ? new Date(referral.createdAt).toLocaleDateString() : new Date(referral._creationTime).toLocaleDateString()}</p>
                                             </div>
                                         </div>
                                     </div>

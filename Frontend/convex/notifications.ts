@@ -17,6 +17,7 @@ export const createNotification = mutation({
     metadata: v.optional(v.object({
       bookingId: v.optional(v.string()),
       referralId: v.optional(v.string()),
+      paymentId: v.optional(v.string()),
     })),
   },
   handler: async (ctx, args) => {
@@ -48,7 +49,7 @@ export const getUnreadCount = query({
       .query("notifications")
       .withIndex("by_user_read", (q) => q.eq("userId", args.userId).eq("isRead", false))
       .collect();
-    
+
     return unreadNotifications.length;
   },
 });
@@ -69,11 +70,11 @@ export const markAllAsRead = mutation({
       .query("notifications")
       .withIndex("by_user_read", (q) => q.eq("userId", args.userId).eq("isRead", false))
       .collect();
-    
+
     for (const notification of unreadNotifications) {
       await ctx.db.patch(notification._id, { isRead: true });
     }
-    
+
     return unreadNotifications.length;
   },
 });

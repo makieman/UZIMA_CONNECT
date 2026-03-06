@@ -6,7 +6,7 @@ import { useState, useRef } from "react";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useMutation, useAction } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -26,6 +26,7 @@ export default function CreateReferralPage({
   const summarizeAI = useAction(api.gemini.summarizeMedicalHistory);
   // @ts-ignore
   const ocrAI = useAction(api.vision.ocrMedicalImage);
+  const activeHospitals = useQuery(api.hospitals.getActiveHospitals) || [];
 
   const [formData, setFormData] = useState({
     patientName: "",
@@ -35,6 +36,7 @@ export default function CreateReferralPage({
     diagnosis: [] as string[],
     referringHospital: physician.hospital,
     receivingFacility: "",
+    receivingHospitalId: "" as string,
     priority: "Routine" as "Routine" | "Urgent" | "Emergency",
   });
 
@@ -210,7 +212,6 @@ export default function CreateReferralPage({
       console.log("Starting OCR scan, data length:", base64.length);
       const result = await ocrAI({
         imageBase64: base64,
-        demoUserId: physician.userId,
       });
 
       if (result.success && result.text) {
@@ -240,16 +241,6 @@ export default function CreateReferralPage({
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const mockHospitals = [
-    "Machakos Referral Hospital",
-    "Kenyatta National Hospital (KNH)",
-    "Mbagathi Hospital",
-    "Memorial Hospital Armed Forces",
-    "Mombasa County Hospital",
-    "Kisumu District Hospital",
-    "Nakuru Teaching Hospital",
-  ];
-
   const diseases = [
     "malignant hypertension",
     "diabetic retinopathy",
@@ -264,7 +255,6 @@ export default function CreateReferralPage({
     "cerebral palsy",
     "peripheral neuropathy",
     "myasthenia gravis",
-    // additional conditions requested
     "epilepsy",
     "multiple sclerosis",
     "poorly controlled diabetes",
@@ -320,7 +310,6 @@ export default function CreateReferralPage({
     "chronic back pain",
     "chronic abdominal pain",
     "fibroids",
-    // newly requested conditions
     "meningitis",
     "hydrocephalus",
     "head trauma",
@@ -344,7 +333,17 @@ export default function CreateReferralPage({
     >,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "receivingFacility") {
+      const selectedHospital = activeHospitals.find(h => h.name === value);
+      setFormData((prev) => ({
+        ...prev,
+        receivingFacility: value,
+        receivingHospitalId: selectedHospital?._id || ""
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const toggleDiagnosis = (d: string) => {
@@ -396,9 +395,10 @@ export default function CreateReferralPage({
           ? (formData.diagnosis as string[]).join("; ")
           : formData.diagnosis,
         referringHospital: formData.referringHospital,
+        referringHospitalId: physician.hospitalId as Id<"hospitals"> || undefined,
         receivingFacility: formData.receivingFacility,
+        receivingHospitalId: formData.receivingHospitalId as Id<"hospitals"> || undefined,
         priority: formData.priority as any,
-        demoUserId: physician.userId,
       });
 
       setSuccess(true);
@@ -412,6 +412,7 @@ export default function CreateReferralPage({
           diagnosis: [],
           referringHospital: physician.hospital,
           receivingFacility: "",
+          receivingHospitalId: "",
           priority: "Routine",
         });
         setSuccess(false);
@@ -743,9 +744,9 @@ export default function CreateReferralPage({
                     className="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 text-sm appearance-none focus:outline-none focus:ring-2 transition-all"
                   >
                     <option value="">Select receiving facility</option>
-                    {mockHospitals.map((hospital) => (
-                      <option key={hospital} value={hospital}>
-                        {hospital}
+                    {activeHospitals.map((hospital) => (
+                      <option key={hospital._id} value={hospital.name}>
+                        {hospital.name} {hospital.county ? `(${hospital.county})` : ""}
                       </option>
                     ))}
                   </select>

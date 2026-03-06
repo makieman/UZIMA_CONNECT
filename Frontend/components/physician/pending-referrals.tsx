@@ -23,7 +23,7 @@ export default function PendingReferralsPage({
   const physicianId = physician?.id as Id<"physicians">;
 
   const referrals = useQuery(api.referrals.getReferralsByPhysician,
-    physicianId ? { physicianId, demoUserId: physician.userId } : "skip"
+    physicianId ? { physicianId } : "skip"
   );
 
 

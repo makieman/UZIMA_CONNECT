@@ -6,11 +6,10 @@ import { requireRole } from "./permissions";
 export const getPaymentsByReferral = query({
   args: {
     referralId: v.id("referrals"),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+    await requireRole(ctx, ["physician", "facility_admin", "super_admin"]);
 
     return await ctx.db
       .query("payments")
@@ -24,11 +23,10 @@ export const getPaymentsByReferral = query({
 export const getPaymentByStkRequestId = query({
   args: {
     stkRequestId: v.string(),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require physician or admin
-    await requireRole(ctx, ["physician", "admin"], args.demoUserId);
+    await requireRole(ctx, ["physician", "facility_admin", "super_admin"]);
 
     return await ctx.db
       .query("payments")
@@ -41,11 +39,10 @@ export const getPaymentByStkRequestId = query({
 // Get all pending payments
 export const getPendingPayments = query({
   args: {
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     return await ctx.db
       .query("payments")
@@ -109,11 +106,10 @@ export const updatePaymentStatus = mutation({
 // Get payment statistics
 export const getPaymentStats = query({
   args: {
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     const allPayments = await ctx.db.query("payments").collect();
 
@@ -135,11 +131,10 @@ export const getPaymentStats = query({
 export const getPaymentsByPhone = query({
   args: {
     phoneNumber: v.string(),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     return await ctx.db
       .query("payments")
@@ -153,11 +148,10 @@ export const getPaymentsByPhone = query({
 export const retryFailedPayment = mutation({
   args: {
     paymentId: v.id("payments"),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     const payment = await ctx.db.get(args.paymentId);
     if (!payment) {

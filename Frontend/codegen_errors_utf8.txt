@@ -1,0 +1,68 @@
+﻿node.exe : Finding 
+component 
+definitions...
+At C:\Program Files\no
+dejs\npx.ps1:29 char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Finding co   
+ mponent definitio    
+ns...:String) [],     
+RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Generating server 
+code...
+Bundling component 
+definitions...
+Bundling component 
+schemas and 
+implementations...
+X [ERROR] Could not 
+resolve "resend"
+
+    convex/actions/ema
+ils.ts:5:23:
+      5 Γöé import { 
+Resend } from 
+"resend";
+        Γò╡           
+             ~~~~~~~~
+
+  You can mark the 
+path "resend" as 
+external to exclude 
+it from the bundle, 
+which will remove 
+this error and leave 
+the unresolved path 
+in the bundle.
+
+X [ERROR] Could not 
+resolve "openai"
+
+    
+convex/openai.ts:5:19:
+      5 Γöé import 
+OpenAI from "openai";
+        Γöé           
+         ~~~~~~~~
+        Γò╡           
+         "./openai"
+
+  Use the relative 
+path "./openai" to 
+reference the file 
+"convex/openai.ts". 
+Without the leading 
+"./", the path 
+"openai" is being 
+interpreted as a 
+package path instead.
+

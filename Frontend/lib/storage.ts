@@ -10,6 +10,8 @@ export function saveAuthState(token: string, user: any) {
   }
 }
 
+export const setAuthState = saveAuthState;
+
 export function getAuthState() {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);

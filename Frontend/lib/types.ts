@@ -1,6 +1,6 @@
 // Core data types for Uzimacare
 
-export type UserRole = "patient" | "admin" | "physician";
+export type UserRole = "patient" | "physician" | "facility_admin" | "super_admin";
 
 export interface User {
   id: string;
@@ -16,6 +16,15 @@ export interface Patient extends User {
   fullName: string;
   dateOfBirth: string;
   nationalId: string;
+}
+
+export interface Hospital {
+  _id: string;
+  name: string;
+  code: string;
+  county?: string;
+  level?: string;
+  isActive: boolean;
 }
 
 export interface Clinic {
@@ -74,11 +83,11 @@ export interface Booking {
   bookingDate: string;
   bookingTime: string;
   status:
-    | "pending-payment"
-    | "confirmed"
-    | "completed"
-    | "cancelled"
-    | "expired";
+  | "pending-payment"
+  | "confirmed"
+  | "completed"
+  | "cancelled"
+  | "expired";
   paymentStatus: "pending" | "completed" | "failed";
   paymentAmount: number; // KSH
   mpesaTransactionId?: string;
@@ -118,11 +127,11 @@ export interface PhysicianReferral {
   receivingFacility: string;
   priority: "Routine" | "Urgent" | "Emergency";
   status:
-    | "pending-admin"
-    | "awaiting-biodata"
-    | "pending-payment"
-    | "confirmed"
-    | "cancelled";
+  | "pending-admin"
+  | "awaiting-biodata"
+  | "pending-payment"
+  | "confirmed"
+  | "cancelled";
   patientPhone?: string;
   stkPhoneNumber?: string;
   patientDateOfBirth?: string;

@@ -7,7 +7,7 @@ import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
-export default function PendingPhysicianReferrals({ user }: { user?: any }) {
+export default function OutgoingReferrals({ user }: { user?: any }) {
   const [selectedReferral, setSelectedReferral] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showBiodataModal, setShowBiodataModal] = useState(false);
@@ -25,9 +25,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
   });
   const [resending, setResending] = useState<string | null>(null);
 
-  const pendingReferrals = useQuery(api.referrals.getPendingReferrals, {
-    demoUserId: user?.id
-  });
+  const pendingReferrals = useQuery(api.referrals.getOutgoingReferrals, {});
   const updateReferral = useMutation(api.referrals.updateReferralStatus);
   const saveBiodata = useMutation(api.referrals.saveBiodata);
   const updatePhoneNumbers = useMutation(api.referrals.updatePhoneNumbers);
@@ -78,7 +76,6 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
         patientNationalId: biodataForm.patientNationalId,
         bookedDate: biodataForm.bookedDate,
         biodataCode: biodataCode || undefined,
-        demoUserId: user?.id,
       });
 
       // ACTUAL M-PESA STK PUSH API CALL
@@ -114,7 +111,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
         );
       }
 
-      await incrementStk({ referralId: selectedReferral._id, demoUserId: user?.id });
+      await incrementStk({ referralId: selectedReferral._id });
 
       setShowBiodataModal(false);
       setSelectedReferral(null);
@@ -152,7 +149,6 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
         referralId: selectedReferral._id,
         patientPhone: editPhoneData.patientPhone,
         stkPhoneNumber: editPhoneData.stkPhoneNumber,
-        demoUserId: user?.id,
       });
       setShowEditPhoneModal(false);
       setSelectedReferral(null);
@@ -183,7 +179,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
       });
 
       console.log("📡 M-Pesa Resend Response:", mpesaResponse);
-      await incrementStk({ referralId: referral._id, demoUserId: user?.id });
+      await incrementStk({ referralId: referral._id });
 
       if (mpesaResponse.success) {
         alert(`✅ STK resent to ${referral.stkPhoneNumber}!`);
@@ -202,7 +198,6 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
       await updateReferral({
         referralId: referral._id,
         status: "paid",
-        demoUserId: user?.id,
       });
       alert("Referral confirmed and moved to completed referrals!");
     } catch (err) {
@@ -227,7 +222,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-primary">
-          Pending Physician Referrals
+          Outgoing Referrals
         </h2>
       </div>
 
@@ -276,7 +271,10 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
                     {referral.status === "awaiting-biodata" &&
                       "Awaiting Biodata"}
                     {referral.status === "pending-payment" && "Pending Payment"}
+                    {referral.status === "paid" && "Paid"}
                     {referral.status === "confirmed" && "Confirmed"}
+                    {referral.status === "completed" && "Completed"}
+                    {referral.status === "cancelled" && "Cancelled"}
                   </p>
                 </div>
               </div>
@@ -378,7 +376,7 @@ export default function PendingPhysicianReferrals({ user }: { user?: any }) {
                       onClick={() => handleConfirmPayment(referral)}
                       className="bg-success text-white hover:opacity-90 text-xs"
                     >
-                      Mark as Paid
+                      Simulate Successful Payment (Bypass)
                     </Button>
                   </>
                 )}

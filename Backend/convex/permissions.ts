@@ -1,28 +1,16 @@
 import { QueryCtx, MutationCtx, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 
-export type Role = "admin" | "physician" | "patient";
+export type Role = "super_admin" | "facility_admin" | "physician" | "patient";
 
 /**
  * Require a user to be authenticated and return their user document.
- * Accepts optional demoUserId for simulation.
+ * (Secure: completely relies on Convex auth session)
  */
-export async function requireUser(ctx: QueryCtx | MutationCtx, demoUserId?: string) {
-    let userId = await getAuthUserId(ctx);
-
-    // DEMO BYPASS: If no real auth, try demoUserId
-    if (!userId && demoUserId) {
-        // Verify it looks like a valid ID (simple check)
-        userId = demoUserId as Id<"users">;
-    }
-
-    console.log("requireUser check:", {
-        realUserId: await getAuthUserId(ctx),
-        demoUserId,
-        resolvedUserId: userId
-    });
+export async function requireUser(ctx: QueryCtx | MutationCtx) {
+    const userId = await getAuthUserId(ctx);
 
     if (!userId) {
         throw new Error("Not authenticated");
@@ -40,14 +28,8 @@ export async function requireUser(ctx: QueryCtx | MutationCtx, demoUserId?: stri
 /**
  * Require a user to have one of the specified roles.
  */
-export async function requireRole(ctx: QueryCtx | MutationCtx, roles: Role[], demoUserId?: string) {
-    const user = await requireUser(ctx, demoUserId);
-
-    console.log("requireRole check:", {
-        userId: user._id,
-        userRole: user.role,
-        requiredRoles: roles
-    });
+export async function requireRole(ctx: QueryCtx | MutationCtx, roles: Role[]) {
+    const user = await requireUser(ctx);
 
     if (!roles.includes(user.role as Role)) {
         throw new Error(`Insufficient permissions. Required roles: ${roles.join(", ")}. Current role: ${user.role}`);
@@ -56,14 +38,45 @@ export async function requireRole(ctx: QueryCtx | MutationCtx, roles: Role[], de
 }
 
 /**
- * Check if the current user is the physician with the given ID.
- * Physicians can only access their own data.
+ * Require Facility Scope
+ * Returns the user and an optional hospitalId defining their viewable scope.
+ * - super_admin: views all hospitals (hospitalId = undefined)
+ * - facility_admin: views only their assigned hospital (hospitalId = user.hospitalId)
+ * - physician: views only their assigned hospital (hospitalId = physician.hospitalId)
  */
-export async function checkPhysicianAccess(ctx: QueryCtx | MutationCtx, physicianId: Id<"physicians">, demoUserId?: string) {
-    const user = await requireRole(ctx, ["physician", "admin"], demoUserId);
+export async function requireFacilityScope(ctx: QueryCtx | MutationCtx): Promise<{ user: Doc<"users">; hospitalId?: Id<"hospitals"> }> {
+    const user = await requireUser(ctx);
 
-    // Admins bypass this check
-    if (user.role === "admin") return;
+    if (user.role === "super_admin") {
+        return { user, hospitalId: undefined }; // No scope restriction
+    }
+
+    if (user.role === "facility_admin") {
+        if (!user.hospitalId) throw new Error("Facility Admin is not assigned to any hospital");
+        return { user, hospitalId: user.hospitalId };
+    }
+
+    if (user.role === "physician") {
+        const physician = await ctx.db
+            .query("physicians")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .unique();
+        if (!physician) throw new Error("Physician profile not found");
+        return { user, hospitalId: physician.hospitalId };
+    }
+
+    throw new Error("Insufficient permissions for facility-scoped access");
+}
+
+/**
+ * Check if the current user is the physician with the given ID.
+ * Physicians can only access their own profile data.
+ */
+export async function checkPhysicianAccess(ctx: QueryCtx | MutationCtx, physicianId: Id<"physicians">) {
+    const user = await requireRole(ctx, ["physician", "super_admin", "facility_admin"]);
+
+    // Admins bypass this check for profile viewing
+    if (user.role === "super_admin" || user.role === "facility_admin") return;
 
     const physician = await ctx.db
         .query("physicians")
@@ -84,9 +97,8 @@ export async function checkPhysicianAccess(ctx: QueryCtx | MutationCtx, physicia
 export async function checkPatientAccess(ctx: QueryCtx | MutationCtx, userId: Id<"users">) {
     const user = await requireUser(ctx);
 
-    // Admins and potentially physicians might have access depending on business logic
-    // For now, strict: own profile or admin
-    if (user.role === "admin") return;
+    // Admins might have access depending on business logic
+    if (user.role === "super_admin" || user.role === "facility_admin") return;
 
     if (user._id !== userId) {
         throw new Error("Unauthorized access to patient data");
@@ -99,9 +111,9 @@ export async function checkPatientAccess(ctx: QueryCtx | MutationCtx, userId: Id
  * Internal query to validate role, usable from actions.
  */
 export const validateRole = internalQuery({
-    args: { roles: v.array(v.string()), demoUserId: v.optional(v.string()) },
+    args: { roles: v.array(v.string()) },
     handler: async (ctx, args) => {
-        await requireRole(ctx, args.roles as Role[], args.demoUserId);
+        await requireRole(ctx, args.roles as Role[]);
         return true;
     },
 });

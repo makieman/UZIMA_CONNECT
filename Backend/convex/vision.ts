@@ -13,13 +13,11 @@ export const ocrMedicalImage = action({
     args: {
         imageBase64: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
-        demoUserId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         // SECURITY: Require physician or admin role
         await ctx.runQuery(internal.permissions.validateRole, {
-            roles: ["physician", "admin"],
-            demoUserId: args.demoUserId
+            roles: ["physician", "facility_admin", "super_admin"]
         });
 
         const project = process.env.GOOGLE_CLOUD_PROJECT;

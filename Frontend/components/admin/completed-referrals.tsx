@@ -7,9 +7,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 export default function CompletedReferralsPage({ user }: { user?: any }) {
-  const completedReferrals = useQuery(api.referrals.getCompletedReferrals, {
-    demoUserId: user?.id
-  });
+  const completedReferrals = useQuery(api.referrals.getCompletedReferrals, {});
   const completed = completedReferrals || [];
   const [selected, setSelected] = useState<any | null>(null);
 

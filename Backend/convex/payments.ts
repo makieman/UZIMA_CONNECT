@@ -218,7 +218,7 @@ export const processSuccessfulPayment = mutation({
 
           // Create notification for physician
           if (referral.physicianId) {
-            const physician = await ctx.db.get(referral.physicianId);
+            const physician = await ctx.db.get(referral.physicianId as Id<"physicians">);
             if (physician) {
               const physicianUser = await ctx.db.get(physician.userId);
               if (physicianUser) {

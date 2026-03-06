@@ -15,11 +15,10 @@ export const createBooking = mutation({
     bookingDate: v.string(),
     bookingTime: v.string(),
     paymentAmount: v.number(),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require patient, physician, or admin role
-    await requireRole(ctx, ["patient", "physician", "admin"], args.demoUserId);
+    await requireRole(ctx, ["patient", "physician", "facility_admin", "super_admin"]);
 
     const expiresAt = Date.now() + (60 * 60 * 1000); // 1 hour from now
 
@@ -42,12 +41,11 @@ export const createBooking = mutation({
 export const getBookingsByPatient = query({
   args: {
     patientId: v.string(),
-    demoUserId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     // SECURITY: Ensure user can only see their own bookings or admin
-    const user = await requireUser(ctx, args.demoUserId);
-    if (user.role !== "admin" && user._id !== args.patientId as any) {
+    const user = await requireUser(ctx);
+    if (user.role !== "facility_admin" && user.role !== "super_admin" && user._id !== args.patientId as any) {
       // This check depends on whether patientId is user._id or something else
       // Let's assume it's user ID for now as per RBAC plan
       // throw new Error("Unauthorized access to bookings");
@@ -90,11 +88,10 @@ export const updateBookingStatus = mutation({
     ),
     paymentStatus: v.optional(v.union(v.literal("pending"), v.literal("completed"), v.literal("failed"))),
     mpesaTransactionId: v.optional(v.string()),
-    demoUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // SECURITY: Require admin or relevant staff
-    await requireRole(ctx, ["admin", "physician"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin", "physician"]);
 
     const { bookingId, ...updates } = args;
     await ctx.db.patch(bookingId, updates);
@@ -157,12 +154,10 @@ export const expireOldBookings = mutation({
 
 // Get all bookings (admin view)
 export const getAllBookings = query({
-  args: {
-    demoUserId: v.optional(v.string())
-  },
+  args: {},
   handler: async (ctx, args) => {
     // SECURITY: Require admin role
-    await requireRole(ctx, ["admin"], args.demoUserId);
+    await requireRole(ctx, ["facility_admin", "super_admin"]);
 
     return await ctx.db
       .query("bookings")

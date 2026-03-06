@@ -1,0 +1,4 @@
+﻿app/login/page.tsx(70,26): error TS2345: Argument of type '{ id: string; role: string; fullName: string; email: string; }' is not assignable to parameter of type 'string'.
+components/physician/incoming-referrals.tsx(28,9): error TS2345: Argument of type '"skip" | {}' is not assignable to parameter of type '{ demoUserId?: string; facilityName: string; } | "skip"'.
+  Type '{}' is not assignable to type '{ demoUserId?: string; facilityName: string; } | "skip"'.
+lib/auth.ts(41,14): error TS2367: This comparison appears to be unintentional because the types '"physician" | "facility_admin" | "super_admin"' and '"admin"' have no overlap.

@@ -4,12 +4,16 @@ import { v } from "convex/values";
 // Helper function to get Daraja OAuth token
 async function getDarajaOAuthToken(
   consumerKey: string,
-  consumerSecret: string
+  consumerSecret: string,
+  environment: "sandbox" | "production" = "sandbox"
 ): Promise<string> {
   const auth = btoa(`${consumerKey}:${consumerSecret}`);
-  
+  const baseUrl = environment === "production"
+    ? "https://api.safaricom.co.ke"
+    : "https://sandbox.safaricom.co.ke";
+
   const tokenResponse = await fetch(
-    "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+    `${baseUrl}/oauth/v1/generate?grant_type=client_credentials`,
     {
       method: "GET",
       headers: {
@@ -41,7 +45,7 @@ function generateKenyaTimestamp(): string {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  
+
   return `${year}${month}${day}${hours}${minutes}${seconds}`;
 }
 
@@ -57,10 +61,10 @@ export const callMpesaStkPush = action({
   handler: async (ctx, args) => {
     console.log("=== M-PESA API STK PUSH CALLED ===");
     console.log("Args:", args);
-    
+
     // Reduce amount to 1 as requested
     const paymentAmount = 1;
-    
+
     try {
       // Step 1: Get environment variables
       const consumerKey = process.env.DARAJA_CONSUMER_KEY;
@@ -68,18 +72,25 @@ export const callMpesaStkPush = action({
       const shortcode = process.env.DARAJA_SHORTCODE;
       const passkey = process.env.DARAJA_PASSKEY;
       let callbackUrl = process.env.DARAJA_CALLBACK_URL;
-      
+
+      const environment = (process.env.DARAJA_ENVIRONMENT ||
+        (shortcode === "174379" ? "sandbox" : "production")) as "sandbox" | "production";
+
+      const mpesaBaseUrl = environment === "production"
+        ? "https://api.safaricom.co.ke"
+        : "https://sandbox.safaricom.co.ke";
+
       if (args.useTestCallback) {
         callbackUrl = "https://webhook.site/test-callback";
       }
-      
+
       if (!consumerKey || !consumerSecret || !shortcode || !passkey || !callbackUrl) {
         throw new Error("Missing required environment variables");
       }
 
       // Step 2: Get OAuth token
-      console.log("=== STEP 1: GETTING OAUTH TOKEN ===");
-      const accessToken = await getDarajaOAuthToken(consumerKey, consumerSecret);
+      console.log(`=== STEP 1: GETTING OAUTH TOKEN (${environment}) ===`);
+      const accessToken = await getDarajaOAuthToken(consumerKey, consumerSecret, environment);
       console.log("OAuth token received successfully");
 
       // Step 3: Generate timestamp and password
@@ -106,7 +117,7 @@ export const callMpesaStkPush = action({
 
       // Step 5: Send STK push
       const stkResponse = await fetch(
-        "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+        `${mpesaBaseUrl}/mpesa/stkpush/v1/processrequest`,
         {
           method: "POST",
           headers: {
@@ -167,7 +178,7 @@ export const testEnvVars = action({
   args: {},
   handler: async (ctx) => {
     console.log("=== TESTING ENV VARS ===");
-    
+
     const envVars = {
       DARAJA_CONSUMER_KEY: !!process.env.DARAJA_CONSUMER_KEY,
       DARAJA_CONSUMER_SECRET: !!process.env.DARAJA_CONSUMER_SECRET,
@@ -175,9 +186,9 @@ export const testEnvVars = action({
       DARAJA_PASSKEY: !!process.env.DARAJA_PASSKEY,
       DARAJA_CALLBACK_URL: !!process.env.DARAJA_CALLBACK_URL,
     };
-    
+
     console.log("Environment Variables Status:", envVars);
-    
+
     return {
       success: true,
       envVars,

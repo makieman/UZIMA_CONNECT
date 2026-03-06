@@ -38,7 +38,7 @@ export async function login(
       sessions.set(token, { userId: user.id, role, expiresAt });
       return { success: true, user, token };
     }
-  } else if (role === "admin") {
+  } else if (role === "facility_admin" || role === "super_admin") {
     if (credentials.email === "admin@uzimacare.ke") {
       const user = db.users.get("admin-001");
       if (!user) {
